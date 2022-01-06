@@ -1,6 +1,8 @@
 const { FiveInARow, Board, Cell } = require('../models/FiveInARow');
+const { v4: uuidv4 } = require('uuid');
 const MAX_CELL_INDEX = 6;
 const MAX_ROUNDS = 2;
+const MAX_PLAYERS = 2;
 
 module.exports.createGame = async (req, res) => {
     const { password } = req.body;
@@ -39,7 +41,7 @@ module.exports.createGame = async (req, res) => {
 module.exports.joinGame = async (req, res) => {
     const { roomId, password } = req.body;
     const game = await FiveInARow.findOne({ roomId: roomId, password: password });
-    if (game && game.status !== 'finished') {
+    if (game && game.status !== 'finished' && !game.players.contains(req.user._id)) {
         if (game.players.length < MAX_PLAYERS) {
             game.players.push(req.user._id);
             game.currentDefender = req.user._id;
@@ -50,10 +52,8 @@ module.exports.joinGame = async (req, res) => {
             game.save();
         }
         else {
-            if (!game.players.contains(req.user._id)) {
-                res.flash('error', 'Game is full');
-                return res.redirect('/');
-            }
+            res.flash('error', 'Game is full');
+            return res.redirect('/');
         }
     }
     res.render('games/FiveInARow', { game: game });
@@ -180,19 +180,19 @@ const calculateWinner = async (roomId) => {
 }
 
 module.exports.makeTurn = async (roomId, x, y) => {
-    const color = await this.colorCell(roomId, x, y);
+    const color = await colorCell(roomId, x, y);
     let roundOver = false;
     let gameOver = false;
-    if (game.currentTurn === 'defender' && await this.isWinningTurn(roomId, x, y)) {
+    if (game.currentTurn === 'defender' && await isWinningTurn(roomId, x, y)) {
         game.madeFiveInARow[game.currentRound] = true;
         roundOver = true;
-        this.clearReadyAll(roomId);
+        clearReadyAll(roomId);
         const game = await FiveInARow.findOne({ roomId: roomId });
         game.currentRound++;
         if (game.currentRound === game.maxRounds) {
             gameOver = true;
             game.status = 'finished';
-            this.calculateWinner(roomId);
+            calculateWinner(roomId);
         }
         else {
             const temp = game.currentAttacker;

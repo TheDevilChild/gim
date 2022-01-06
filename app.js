@@ -84,7 +84,8 @@ const http = require('http');
 const server = http.createServer(app);
 const io = require('socket.io')(server);
 
-const FiveInARow = require('./controllers/FiveInARow');
+const FiveInARow = require('./controllers/FiveInARowController');
+const Uba = require('./controllers/UbaController');
 
 io.on('connnection', (socket) => {
     socket.on('create', async (params) => {
@@ -93,6 +94,9 @@ io.on('connnection', (socket) => {
             socket.join(roomId);
             io.to(roomId).emit('updateBoard', FiveInARow.getBoard(roomId));
             io.to(roomId).emit('updatePlayersList', FiveInARow.getPlayersList(roomId));
+        } else if (gameId === 'Uba') {
+            socket.join(roomId);
+            io.to(roomId).emit('updateUsersList', Uba.getPlayersList(roomId));
         }
     })
     socket.on('join', async (params) => {
@@ -105,6 +109,13 @@ io.on('connnection', (socket) => {
             if (playersList.length === 2) {
                 io.to(roomId).emit('roomFull');
             }
+        } else if (gameId === 'Uba') {
+            socket.join(roomId);
+            const playersList = Uba.getPlayersList(roomId);
+            io.to(roomId).emit('updateUsersList', playersList);
+            if (playersList.length === await Uba.getNoOfPlayers(roomId)) {
+                io.to(roomId).emit('roomFull');
+            }
         }
     })
     socket.on('ready', async (params) => {
@@ -114,12 +125,17 @@ io.on('connnection', (socket) => {
             if (FiveInARow.areAllReady(roomId)) {
                 io.to(roomId).emit('enablePlay');
             }
+        } else if (gameId === 'Uba') {
+            await Uba.setReady(roomId, playerId);
+            if (Uba.areAllReady(roomId)) {
+                io.to(roomId).emit('enablePlay');
+            }
         }
     })
 
     socket.on('startRound', async (params) => {
         const { gameId, roomId } = params;
-        if (gameId === 'FiveInARow') {
+        if (gameId === 'FiveInARow' || gameId === 'Uba') {
             io.to(roomId).emit('startRound');
         }
     })
@@ -131,7 +147,7 @@ io.on('connnection', (socket) => {
                 if (FiveInARow.notOccupied(roomId, x, y)) {
                     const { color, roundOver, gameOver } = await FiveInARow.makeTurn(roomId, x, y);
                     io.to(roomId).emit('updateTurn', { x, y, color });
-                    io.to(roomId).emit('updateBoard', FiveInARow.getBoard(roomId));
+                    // io.to(roomId).emit('updateBoard', FiveInARow.getBoard(roomId));
                     if (gameOver) {
                         io.to(roomId).emit('gameOver', { game: FiveInARow.getFinishedGame(roomId) });
                     } else if (roundOver) {
@@ -146,6 +162,23 @@ io.on('connnection', (socket) => {
             callback('Not your turn');
         }
     })
+    socket.on('makeBid', async (params, callback) => {
+        const { gameId, roomId, playerId, bids } = params;
+        if (gameId === 'Uba') {
+            const { roundOver, gameOver } = await Uba.makeBid(roomId, playerId, bids);
+            if (gameOver) {
+                // Have to figure out what all to send back when the game gets over
+                io.to(roomId).emit('gameOver', { game: Uba.getFinishedGame(roomId) });
+            } else if (roundOver) {
+                // Have to figure out what to send back when the rounds get over
+                io.to(roomId).emit('endRound');
+            } else {
+                // Send back to wait for the other player to make a bid
+                // Maybe will send back his bids also to be displayed on the sidebar
+                socket.emit('makeBid');
+            }
+        }
+    });
 })
 
 

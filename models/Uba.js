@@ -13,7 +13,7 @@ const bidArrayElementSchema = new mongoose.Schema({
     }]
 });
 
-const bidArrayElement = mongoose.model('BidArrayElement', bidArrayElementSchema);
+const BidArrayElement = mongoose.model('BidArrayElement', bidArrayElementSchema);
 
 const bidArraySchema = new mongoose.Schema({
     bidArray: {
@@ -22,7 +22,7 @@ const bidArraySchema = new mongoose.Schema({
     }
 });
 
-const bidArray = mongoose.model('BidArray', bidArraySchema);
+const BidArray = mongoose.model('BidArray', bidArraySchema);
 
 const scoreOfRoundSchema = new mongoose.Schema({
     score: {
@@ -34,9 +34,9 @@ const scoreOfRoundSchema = new mongoose.Schema({
         required: true
     }
 });
-const scoreOfRound = mongoose.model('ScoreOfRound', scoreOfRoundSchema);
+const ScoreOfRound = mongoose.model('ScoreOfRound', scoreOfRoundSchema);
 
-const avgScoreSchema = new mongoose.Schema({
+const avgScoreOfRoundSchema = new mongoose.Schema({
     avgScore: {
         type: [Number],
         required: true
@@ -47,7 +47,7 @@ const avgScoreSchema = new mongoose.Schema({
     }
 });
 
-const avgScore = mongoose.model('AvgScore', avgScoreSchema);
+const AvgScoreOfRound = mongoose.model('AvgScoreOfRound', avgScoreOfRoundSchema);
 
 const ubaSchema = new mongoose.Schema({
     roomId: {
@@ -63,7 +63,7 @@ const ubaSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-    maxPlayers: {
+    noOfPlayers: {
         type: Number,
         default: 3
     },
@@ -71,7 +71,7 @@ const ubaSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    maxRounds: {
+    noOfRounds: {
         type: Number,
         default: 3
     },
@@ -116,8 +116,11 @@ const ubaSchema = new mongoose.Schema({
     },
     avgScores: {
         type: [mongoose.Schema.Types.ObjectId],
-        ref: 'AvgScore',
+        ref: 'AvgScoreOfRound',
         default: []
     }
 });
 
+const Uba = mongoose.model('Uba', ubaSchema);
+
+module.exports = { BidArrayElement, BidArray, Uba, ScoreOfRound, AvgScoreOfRound };

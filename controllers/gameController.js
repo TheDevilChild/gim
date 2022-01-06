@@ -1,6 +1,6 @@
 const gameslist = ['5InARow', 'Uba'];
 const express = require('express');
-const { FiveInARow } = require('../controllers/FiveInARow');
+const { FiveInARow } = require('../controllers/FiveInARowController');
 const Uba = require('../models/Uba');
 const {v4: uuidv4} = require('uuid');
 
