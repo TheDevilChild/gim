@@ -7,9 +7,8 @@
     <title>Document</title>
 </head>
 <body>
-    <h1><%= gameName %> </h1>
-    <form action="" method="POST">
-        <input type="password" name="password" id="password" placeholder="Password">
+    <form action="/play/<%= gameId %>/create" method="POST">
+        <input type="password" name="password" id="password" placeholder="Password" value="a">
         <button>
             Create Game
         </button>

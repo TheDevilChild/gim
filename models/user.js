@@ -17,27 +17,27 @@ const UserSchema = new mongoose.Schema({
     },
     profilePicture: {
         type: String,
-        default: ''
+        default: '/images/img1.png'
     },
-    following: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-    }],
-    followers: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-    }],
     games: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Game'
     }],
-    reviews: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Review'
-    }],
+    friends: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'Friend'
+    },
+    friendRequests: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'FriendRequest'
+    }
+    // reviews: [{
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'Review'
+    // }],
 });
 
 UserSchema.plugin(passportLocalMongoose);
-module.exports = mongoose.model('User', UserSchema);
+const User = mongoose.model('User', UserSchema);
 
-    
+module.exports = User;

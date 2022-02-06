@@ -6,25 +6,25 @@ module.exports.renderRegister = (req, res, next) => {
 
 module.exports.registerUser = async(req, res, next) => {
     try {
-        const { firstName, lastName, password, username, profilePicture, email } = req.body;
-        const user = new User({ firstName, lastName, username, profilePicture, email });
+        const { firstName, lastName, password, username, email } = req.body;
+        const user = new User({ firstName, lastName, username, email });
         const registeredUser = await User.register(user, password);
         req.login(registeredUser, err => {
             if (err) return next(err);
             res.redirect('/');
         })
     } catch (e) {
-        res.redirect('/register');
+        res.redirect({title: '5InARow', showNavbar: true, showFooter: true},'/register');
     }
 }
 
 module.exports.renderLogin = (req, res, next) => {
-    res.render('users/login');
+    res.render('users/login', { title: '5InARow', showNavbar: true, showFooter: true});
 }
 
 module.exports.loginUser = (req, res, next) => {
-    const redirectUrl = req.session.redirectTo || '/';
-    delete req.session.redirectTo;
+    const redirectUrl = req.session.returnTo || '/';
+    delete req.session.returnTo;
     res.redirect(redirectUrl);
 }
 

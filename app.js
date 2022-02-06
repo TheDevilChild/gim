@@ -55,6 +55,7 @@ app.use((req, res, next) => {
     next();
 })
 
+
 //Routes
 
 // /register --> GET: register form
@@ -72,6 +73,7 @@ app.use((req, res, next) => {
 //Home Routes
 const homeRoutes = require('./routes/homeRoutes');
 app.use('/', homeRoutes);
+
 //Game Routes
 const gamesRoutes = require('./routes/gameRoutes')
 app.use('/play/:gameId/', gamesRoutes);
@@ -80,105 +82,131 @@ app.use('/play/:gameId/', gamesRoutes);
 const userRoutes = require('./routes/userRoutes');
 app.use('/', userRoutes);
 
+const chatRoutes = require('./routes/chatRoutes');
+app.use('/chat', chatRoutes);
+
+const usersApiRoute = require('./routes/api/users');
+app.use('/api/users', usersApiRoute);
+
+const chatApiRoute = require('./routes/api/chat');
+app.use('/api/chat', chatApiRoute);
+
+const messageApiRoute = require('./routes/api/message');
+app.use('/api/message', messageApiRoute);
+
 const http = require('http');
+const socketio = require('socket.io');
 const server = http.createServer(app);
-const io = require('socket.io')(server);
+const io = socketio(server);
 
 const FiveInARow = require('./controllers/FiveInARowController');
 const Uba = require('./controllers/UbaController');
+const { gameMessage } = require('./lib/gameMessage');
 
-io.on('connnection', (socket) => {
+
+io.on('connection', (socket) => {
+
+    socket.on('newMessage', ({ from, messageText, roomId }) => {
+        io.to(roomId).emit('newMessage', gameMessage(from, messageText));
+    })
+
     socket.on('create', async (params) => {
         const { gameId, roomId } = params;
+        const noOfPlayers = await eval(gameId).getNoOfPlayers(roomId);
+        const noOfRounds = await eval(gameId).getNoOfRounds(roomId);
+        socket.join(roomId);
+        io.to(roomId).emit('updatePlayersList', await eval(gameId).getPlayersList(roomId));
+        socket.emit('totalPlayersAndRounds',{noOfPlayers, noOfRounds});
+        socket.emit('currentPlayer', await eval(gameId).getCurrentPlayer(roomId));
         if (gameId === 'FiveInARow') {
-            socket.join(roomId);
-            io.to(roomId).emit('updateBoard', FiveInARow.getBoard(roomId));
-            io.to(roomId).emit('updatePlayersList', FiveInARow.getPlayersList(roomId));
+            io.to(roomId).emit('updateBoard', await FiveInARow.getBoard(roomId));
         } else if (gameId === 'Uba') {
-            socket.join(roomId);
-            io.to(roomId).emit('updateUsersList', Uba.getPlayersList(roomId));
+            
         }
     })
+
     socket.on('join', async (params) => {
         const { gameId, roomId } = params;
+        const noOfPlayers = await eval(gameId).getNoOfPlayers(roomId);
+        const noOfRounds = await eval(gameId).getNoOfRounds(roomId);
+        socket.join(roomId);
+        socket.emit('totalPlayersAndRounds',{noOfPlayers, noOfRounds});
+        socket.emit('currentPlayer', await eval(gameId).getCurrentPlayer(roomId));
+        const playersList = await eval(gameId).getPlayersList(roomId);
+        io.to(roomId).emit('updatePlayersList', playersList);
+        if (playersList.length === await eval(gameId).getNoOfPlayers(roomId)) {
+            io.to(roomId).emit('roomFull');
+        }
         if (gameId === 'FiveInARow') {
-            socket.join(roomId);
-            const playersList = FiveInARow.getPlayersList(roomId);
-            io.to(roomId).emit('updateBoard', FiveInARow.getBoard(roomId));
-            io.to(roomId).emit('updatePlayersList', playersList);
-            if (playersList.length === 2) {
-                io.to(roomId).emit('roomFull');
-            }
-        } else if (gameId === 'Uba') {
-            socket.join(roomId);
-            const playersList = Uba.getPlayersList(roomId);
-            io.to(roomId).emit('updateUsersList', playersList);
-            if (playersList.length === await Uba.getNoOfPlayers(roomId)) {
-                io.to(roomId).emit('roomFull');
-            }
+            io.to(roomId).emit('updateBoard', await FiveInARow.getBoard(roomId)); 
         }
     })
+
     socket.on('ready', async (params) => {
         const { gameId, roomId, playerId } = params;
-        if (gameId === 'FiveInARow') {
-            await FiveInARow.setReady(roomId, playerId);
-            if (FiveInARow.areAllReady(roomId)) {
-                io.to(roomId).emit('enablePlay');
-            }
-        } else if (gameId === 'Uba') {
-            await Uba.setReady(roomId, playerId);
-            if (Uba.areAllReady(roomId)) {
-                io.to(roomId).emit('enablePlay');
-            }
+        await eval(gameId).setReady(roomId, playerId);
+        io.to(roomId).emit('updateReadyCount',await eval(gameId).getReadyCount(roomId));
+        if (await eval(gameId).areAllReady(roomId)) {
+            io.to(roomId).emit('enablePlayButton');
         }
+    })
+
+    socket.on('unready', async (params) => {
+        const { gameId, roomId, playerId } = params;
+        await eval(gameId).clearReady(roomId, playerId);
+        io.to(roomId).emit('updateReadyCount',await eval(gameId).getReadyCount(roomId));
     })
 
     socket.on('startRound', async (params) => {
         const { gameId, roomId } = params;
-        if (gameId === 'FiveInARow' || gameId === 'Uba') {
-            io.to(roomId).emit('startRound');
-        }
+        io.to(roomId).emit('startRound',await eval(gameId).getCurrentRoundNumber(roomId));
     })
 
     socket.on('turn', async (params, callback) => {
-        const { gameId, roomId, playerId, x, y } = params;
+        const { x, y, gameId, roomId, playerId } = params;
         if (gameId === 'FiveInARow') {
-            if (FiveInARow.isYourTurn(roomId, playerId)) {
-                if (FiveInARow.notOccupied(roomId, x, y)) {
+            if (await FiveInARow.isYourTurn(roomId, playerId)) {
+                if (await FiveInARow.notOccupied(roomId, x, y)) {
                     const { color, roundOver, gameOver } = await FiveInARow.makeTurn(roomId, x, y);
                     io.to(roomId).emit('updateTurn', { x, y, color });
-                    // io.to(roomId).emit('updateBoard', FiveInARow.getBoard(roomId));
+                    io.to(roomId).emit('updateGameHistory', await FiveInARow.getLastMove(roomId));
+                    io.to(roomId).emit('currentPlayer',await eval(gameId).getCurrentPlayer(roomId));
                     if (gameOver) {
-                        io.to(roomId).emit('gameOver', { game: FiveInARow.getFinishedGame(roomId) });
+                        console.log('game over');
+                        io.to(roomId).emit('gameOver', { game: await FiveInARow.getFinishedGame(roomId) });
                     } else if (roundOver) {
                         // Have to figure out what all to send back when the rounds get over
+                        await FiveInARow.clearReadyAll(roomId);
                         io.to(roomId).emit('endRound');
+                        io.to(roomId).emit('updateBoard', await FiveInARow.getBoard(roomId));
                     }
+                    callback('success');
+                } else {
+                    callback('Occupied');
                 }
             } else {
-                callback('Occupied');
+                callback('Not your turn');
             }
-        } else {
-            callback('Not your turn');
         }
     })
-    socket.on('makeBid', async (params, callback) => {
-        const { gameId, roomId, playerId, bids } = params;
-        if (gameId === 'Uba') {
-            const { roundOver, gameOver } = await Uba.makeBid(roomId, playerId, bids);
-            if (gameOver) {
-                // Have to figure out what all to send back when the game gets over
-                io.to(roomId).emit('gameOver', { game: Uba.getFinishedGame(roomId) });
-            } else if (roundOver) {
-                // Have to figure out what to send back when the rounds get over
-                io.to(roomId).emit('endRound');
-            } else {
-                // Send back to wait for the other player to make a bid
-                // Maybe will send back his bids also to be displayed on the sidebar
-                socket.emit('makeBid');
-            }
-        }
-    });
+    
+    // socket.on('makeBid', async (params, callback) => {
+    //     const { gameId, roomId, playerId, bids } = params;
+    //     if (gameId === 'Uba') {
+    //         const { roundOver, gameOver } = await Uba.makeBid(roomId, playerId, bids);
+    //         if (gameOver) {
+    //             // Have to figure out what all to send back when the game gets over
+    //             io.to(roomId).emit('gameOver', { game: Uba.getFinishedGame(roomId) });
+    //         } else if (roundOver) {
+    //             // Have to figure out what to send back when the rounds get over
+    //             io.to(roomId).emit('endRound');
+    //         } else {
+    //             // Send back to wait for the other player to make a bid
+    //             // Maybe will send back his bids also to be displayed on the sidebar
+    //             socket.emit('makeBid');
+    //         }
+    //     }
+    // });
 })
 
 

@@ -1,0 +1,69 @@
+-----------------FiveInARow--------------------
+    Rules
+    You are attacker or defender and a question mark showing your aim
+    Error message somehow maybe in the history or flash type
+    Connect hover to click to copy(Not Doing)XXXXXX
+    How many turns needed in 2nd round
+    Text at end of all the rounds and start
+    Designing :(
+
+    ----Future-----
+        Add a tooltip to every player card which will show some info abt him maybe his exp points
+        n stuff.. and a friend req btn
+        Add a hover or a click feature to every game history card to show the game state at that point i.e
+        the state of the board
+        Maybe a section for ads 😜
+
+-----------------Social--------------------
+    Implement a friendship system i.e 2 way friendship rather than follow/following
+    Implement a chat system to your friends(Real time messages + stored messages)
+
+    ----Future-----
+        Have to show no. of unread messages 
+        Notification system implement karna hai
+        Enable the host to send direct notifications to friends to join the game
+        New messages notifications
+        Implement online offline system
+
+-----------------UBA--------------------
+    Implement the whole game just like FiveInARow
+
+    ----Future-----
+        Add a tooltip to every player card which will show some info abt him maybe his exp points
+        n stuff.. and a friend req btn
+        Maybe a section for ads 😜
+
+-----------------GameList Page--------------------
+    Make cards for all the games
+    
+    ----Future-----
+        Render all these cards using info stored in database rather than static cards
+
+-----------------General Website--------------------
+    Add the circle for profile in navbar once person has logged in 
+    Make a popup to that circle and show some info abt that person like experience,etc
+    Make the login, signup page
+    Search bar to search for users
+        4 states of replacement of follow/following button
+        send friend request
+        accept request(i.e you have a friend req from this person accept it)
+        pending request(that you might want to cancel)
+        Message(in case you are friends already)
+
+    ----Future-----
+        Mayyybbeee Add a blog page to the website to write and post blogs and read them n stuff
+        Add the feature to change your profile picture
+        Provide some default character images for profile picture to choose from
+        Have to decide where to put the sent friends request, pending friend req...
+        Implement the exp/trophies system rewarded on each game
+        Profile page for the player
+            Bio
+            Trophies
+            Online/offline
+            Their friends 
+            Game history
+            Spectation button for the ongoing game if any
+        Email verification for registration
+        Password reset
+        OAuth
+        Playing with friends OR Play with random ppl

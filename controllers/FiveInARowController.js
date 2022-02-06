@@ -1,11 +1,16 @@
-const { FiveInARow, Board, Cell } = require('../models/FiveInARow');
+const { FiveInARow, Board, Cell, History } = require('../models/FiveInARow');
 const { v4: uuidv4 } = require('uuid');
 const MAX_CELL_INDEX = 6;
 const MAX_ROUNDS = 2;
 const MAX_PLAYERS = 2;
+const MAX_MOVES_PER_ROUND = (MAX_CELL_INDEX + 1) * (MAX_CELL_INDEX + 1);
 
-module.exports.createGame = async (req, res) => {
+const createGame = async (req, res) => {
     const { password } = req.body;
+    if (password.trim() === '') {
+        req.flash('danger', 'Password is required');
+        return res.redirect('/play/FiveInARow/create');
+    }
     const roomId = uuidv4();
     const game = await new FiveInARow({
         roomId: roomId,
@@ -27,21 +32,25 @@ module.exports.createGame = async (req, res) => {
                     y: j,
                     value: null
                 });
-                cell.save();
+                await cell.save();
                 board.cells.push(cell._id);
             }
         }
-        board.save();
+        await board.save();
         game.boards.push(board._id);
     }
-    game.save();
-    res.render('games/FiveInARow', { game: game });
+    await game.save();
+    res.render('FiveInARow', { title: '5InARow', showNavbar: true, showFooter: true, roomId, isCreator: true });
 };
 
-module.exports.joinGame = async (req, res) => {
+const joinGame = async (req, res) => {
     const { roomId, password } = req.body;
     const game = await FiveInARow.findOne({ roomId: roomId, password: password });
-    if (game && game.status !== 'finished' && !game.players.contains(req.user._id)) {
+    if (roomId.trim() === '' || password.trim() === '') {
+        req.flash('danger', 'Room Id and Password are required');
+        return res.redirect('/play/FiveInARow/join');
+    }
+    if (game && game.status !== 'finished' && !game.players.includes(req.user._id)) {
         if (game.players.length < MAX_PLAYERS) {
             game.players.push(req.user._id);
             game.currentDefender = req.user._id;
@@ -49,31 +58,33 @@ module.exports.joinGame = async (req, res) => {
             if (game.players.length === MAX_PLAYERS) {
                 game.status = 'playing';
             }
-            game.save();
+            await game.save();
         }
         else {
             res.flash('error', 'Game is full');
             return res.redirect('/');
         }
     }
-    res.render('games/FiveInARow', { game: game });
+    res.render('FiveInARow', { title: '5InARow', showNavbar: true, showFooter: true, roomId, isCreator: false });
 };
 
-module.exports.getPlayersList = async (roomId) => {
-    const game = await FiveInARow.findOne({ roomId: roomId }).populate('players');
-    return game.players;
+const getPlayersList = async (roomId) => {
+    const game = await FiveInARow.find({ roomId: roomId })
+        .populate('players');
+    return game[0].players;
 }
 
-module.exports.isYourTurn = async (roomId, playerId) => {
-    const game = await FiveInARow.findOne({ roomId: roomId });
-    if ((game.currentAttacker._id.equals(playerId) && currentTurn === 'attacker')
-        || game.currentDefender._id.equals(playerId) && currentTurn === 'defender') {
+const isYourTurn = async (roomId, playerId) => {
+    let game = await FiveInARow.find({ roomId: roomId })
+        .populate('currentAttacker').populate('currentDefender');
+    if ((game[0].currentAttacker?._id.equals(playerId) && game[0].currentTurn === 'attacker')
+        || game[0].currentDefender?._id.equals(playerId) && game[0].currentTurn === 'defender') {
         return true;
     }
     return false;
 }
 
-module.exports.notOccupied = async (roomId, x, y) => {
+const notOccupied = async (roomId, x, y) => {
     const game = await FiveInARow.findOne({ roomId: roomId });
     const board = await Board.findById(game.boards[game.currentRound]);
     const cell = await Cell.findById(board.cells[x * (MAX_CELL_INDEX + 1) + y]);
@@ -84,24 +95,55 @@ const colorCell = async (roomId, x, y) => {
     const game = await FiveInARow.findOne({ roomId: roomId });
     const board = await Board.findById(game.boards[game.currentRound]);
     const cell = await Cell.findById(board.cells[x * (MAX_CELL_INDEX + 1) + y]);
-    if (game.currentturn === 'attacker') {
+    const lastMove = new History();
+    lastMove.round = game.currentRound;
+    lastMove.move = [x, y];
+    lastMove.moveNo = game.noOfMoves[game.currentRound] + 1;
+    if (game.currentTurn === 'attacker') {
+        lastMove.player = game.currentAttacker;
+        lastMove.action = 'attacked';
         cell.value = 'red';
         game.currentTurn = 'defender';
     }
     else {
+        lastMove.player = game.currentDefender;
+        lastMove.action = 'defended';
         cell.value = 'blue';
         game.currentTurn = 'attacker';
     }
-    cell.save();
+    await lastMove.save();
+    game.gameHistory.push(lastMove._id);
+    await cell.save();
     game.noOfMoves[game.currentRound]++;
-    game.save();
+    await game.save();
     return cell.value;
 }
 
-const clearReadyAll = async (roomId) => {
+const getLastMove = async (roomId) => {
     const game = await FiveInARow.findOne({ roomId: roomId });
-    game.playersReady.forEach(player => player = false);
-};
+    const lastMove = await History.findById(game.gameHistory[game.gameHistory.length - 1]).populate('player');
+    return lastMove;
+}
+
+const getReadyCount = async (roomId) => {
+    const game = await FiveInARow.find({ roomId: roomId });
+    let count = 0;
+    game[0].playersReady.forEach(player => {
+        if (player) {
+            count++;
+        }
+    });
+    return count;
+}
+
+const getCurrentPlayer = async (roomId) => {
+    const game = await FiveInARow.find({ roomId: roomId }).populate('currentAttacker').populate('currentDefender');
+    if (game[0].currentTurn === 'attacker') {
+        return game[0].currentAttacker;
+    } else {
+        return game[0].currentDefender;
+    }
+}
 
 const checkDirection = async (board, x, y, dx, dy) => {
     let count = 0;
@@ -122,8 +164,8 @@ const checkDirection = async (board, x, y, dx, dy) => {
 }
 
 const isWinningTurn = async (roomId, x, y) => {
-    const game = await FiveInARow.findOne({ roomId: roomId });
-    const board = await Board.findById(game.boards[game.currentRound]);
+    const game = await FiveInARow.find({ roomId: roomId });
+    const board = await Board.findById(game[0].boards[game[0].currentRound]);
     for (let dx = -1; dx < 2; dx++) {
         for (let dy = -1; dy < 2; dy++) {
             if (dx === 0 && dy === 0) {
@@ -136,8 +178,8 @@ const isWinningTurn = async (roomId, x, y) => {
                 return true;
             }
             else if (count === 4) {
-                game.countFour[game.currentRound]++;
-                game.save();
+                game[0].countFours[game[0].currentRound]++;
+                await game[0].save();
             }
         }
     }
@@ -157,7 +199,7 @@ const calculateWinner = async (roomId) => {
             game.winner = null;
             game.looser = null;
         }
-    } else if(game.madeFiveInARow[0]) {
+    } else if (game.madeFiveInARow[0]) {
         game.winner = game.players[0];
         game.looser = game.players[1];
     } else if (game.madeFiveInARow[1]) {
@@ -165,10 +207,10 @@ const calculateWinner = async (roomId) => {
         game.looser = game.players[0];
     }
     else {
-        if(game.noOfMoves[0] < game.noOfMoves[1]) {
+        if (game.countFours[0] < game.countFours[1]) {
             game.winner = game.players[1];
             game.looser = game.players[0];
-        } else if(game.noOfMoves[0] > game.noOfMoves[1]) {
+        } else if (game.countFours[0] > game.countFours[1]) {
             game.winner = game.players[0];
             game.looser = game.players[1];
         } else {
@@ -176,67 +218,96 @@ const calculateWinner = async (roomId) => {
             game.looser = null;
         }
     }
-    game.save();
+    await game.save();
 }
 
-module.exports.makeTurn = async (roomId, x, y) => {
+const makeTurn = async (roomId, x, y) => {
     const color = await colorCell(roomId, x, y);
+    const game = await FiveInARow.find({ roomId: roomId });
     let roundOver = false;
     let gameOver = false;
-    if (game.currentTurn === 'defender' && await isWinningTurn(roomId, x, y)) {
-        game.madeFiveInARow[game.currentRound] = true;
-        roundOver = true;
-        clearReadyAll(roomId);
-        const game = await FiveInARow.findOne({ roomId: roomId });
-        game.currentRound++;
-        if (game.currentRound === game.maxRounds) {
-            gameOver = true;
-            game.status = 'finished';
-            calculateWinner(roomId);
+    if (game[0].currentTurn === 'defender') {
+        const isWinning = await isWinningTurn(roomId, x, y);
+        if (isWinning) {
+            game[0].madeFiveInARow[game[0].currentRound] = true;
         }
-        else {
-            const temp = game.currentAttacker;
-            game.currentAttacker = game.currentDefender;
-            game.currentDefender = temp;
+        if (isWinning || game[0].noOfMoves[game[0].currentRound] === MAX_MOVES_PER_ROUND || (game[0].currentRound === 1 && game[0].noOfMoves[0] === game[0].noOfMoves[1])) {
+            roundOver = true;
+            game[0].currentRound++;
+            game[0].currentTurn = 'attacker';
+            if (game[0].currentRound === game[0].maxRounds) {
+                gameOver = true;
+                game[0].status = 'finished';
+                await calculateWinner(roomId);
+            }else {
+                const temp = game[0].currentAttacker;
+                game[0].currentAttacker = game[0].currentDefender;
+                game[0].currentDefender = temp;
+            }
+            await game[0].save();
         }
-        game.save();
+        
     }
-    return {color, roundOver, gameOver};
+    return { color, roundOver, gameOver };
 }
 
-module.exports.getBoard = async (roomId) => {
+
+
+const getBoard = async (roomId) => {
     const game = await FiveInARow.findOne({ roomId: roomId });
     const board = await Board.findById(game.boards[game.currentRound]).populate('cells');
-    return board;
+    const boardArray = new Array(MAX_CELL_INDEX + 1);
+    for (let i = 0; i < boardArray.length; i++) {
+        boardArray[i] = new Array(MAX_CELL_INDEX + 1);
+        for (let j = 0; j < boardArray[i].length; j++) {
+            boardArray[i][j] = board.cells[i * (MAX_CELL_INDEX + 1) + j].value === null ? '' : board.cells[i * (MAX_CELL_INDEX + 1) + j].value;
+        }
+    }
+    return boardArray;
 }
- 
-module.exports.setReady = async (roomId, playerId) => {
+
+const getNoOfPlayers = async (roomId) => {
+    const game = await FiveInARow.find({ roomId: roomId });
+    return game[0].maxPlayers;
+}
+
+const getCurrentRoundNumber = async (roomId) => {
+    const game = await FiveInARow.find({ roomId: roomId });
+    return game[0].currentRound + 1;
+}
+
+const getNoOfRounds = async (roomId) => {
+    const game = await FiveInARow.find({ roomId: roomId });
+    return game[0].maxRounds;
+}
+
+const setReady = async (roomId, playerId) => {
     const game = await FiveInARow.findOne({ roomId: roomId });
     for (let i = 0; i < game.players.length; i++) {
         if (game.players[i]._id.equals(playerId)) {
             if (!game.playersReady[i]) {
                 game.playersReady[i] = true;
-                game.save();
-            } 
-            break;
-        }
-    }
-}
-
-module.exports.clearReady = async (roomId, playerId) => {
-    const game = await FiveInARow.findOne({ roomId: roomId });
-    for (let i = 0; i < game.players.length; i++) {
-        if (game.players[i]._id.equals(playerId)) {
-            if (game.playersReady[i]) {
-                game.playersReady[i] = false;
-                game.save();
+                await game.save();
             }
             break;
         }
     }
 }
 
-module.exports.areAllReady = async (roomId) => {
+const clearReady = async (roomId, playerId) => {
+    const game = await FiveInARow.findOne({ roomId: roomId });
+    for (let i = 0; i < game.players.length; i++) {
+        if (game.players[i]._id.equals(playerId)) {
+            if (game.playersReady[i]) {
+                game.playersReady[i] = false;
+                await game.save();
+            }
+            break;
+        }
+    }
+}
+
+const areAllReady = async (roomId) => {
     const game = await FiveInARow.findOne({ roomId: roomId });
     for (let i = 0; i < game.playersReady.length; i++) {
         if (!game.playersReady[i]) {
@@ -246,8 +317,36 @@ module.exports.areAllReady = async (roomId) => {
     return true;
 }
 
-module.exports.getFinishedGame = async (roomId) => {
-    const game = await FiveInARow.findOne({ roomId: roomId }).populate('winner').populate('looser');
+const clearReadyAll = async (roomId) => {
+    const game = await FiveInARow.findOne({ roomId: roomId });
+    for (let i = 0; i < game.playersReady.length; i++) {
+        game.playersReady[i] = false;
+    }
+    await game.save();
+}
+
+const getFinishedGame = async (roomId) => {
+    const game = await FiveInARow.findOne({ roomId: roomId }).populate('winner').populate('loser');
     return game;
 }
 
+module.exports = {
+    createGame,
+    joinGame,
+    getPlayersList,
+    isYourTurn,
+    notOccupied,
+    makeTurn,
+    getBoard,
+    setReady,
+    clearReady,
+    areAllReady,
+    getFinishedGame,
+    getNoOfPlayers,
+    getReadyCount,
+    clearReadyAll,
+    getLastMove,
+    getCurrentRoundNumber,
+    getNoOfRounds,
+    getCurrentPlayer
+};

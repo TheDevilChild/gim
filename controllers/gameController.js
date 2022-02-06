@@ -1,43 +1,41 @@
-const gameslist = ['5InARow', 'Uba'];
+const gameslist = ['FiveInARow', 'Uba'];
 const express = require('express');
-const { FiveInARow } = require('../controllers/FiveInARowController');
+const  FiveInARow  = require('../controllers/FiveInARowController');
 const Uba = require('../models/Uba');
 const {v4: uuidv4} = require('uuid');
 
-const createGame = async (req,res) => {
+module.exports.createGame = async (req, res) => {
     const { gameId } = req.params;
-    const {password } = req.body;
-    const roomId  = uuidv4();
+    // const {password } = req.body;
+    // const roomId  = uuidv4();
     if (gameslist.includes(gameId)) {
-        if (gameId === '5InARow') {
-            FiveInARow.createGame();
+        if (gameId === 'FiveInARow') {
+            FiveInARow.createGame(req,res);
         } else if (gameId === 'Uba') {
             //Uba game
         }
     }
 }
 
-const joinGame = async (req,res) => {
+module.exports.joinGame = async (req,res) => {
     const { gameId } = req.params;
     const { roomId, password } = req.body;
 
     if (gameslist.includes(gameId)) {
-        if (gameId === '5InARow') {
-            FiveInARow.joinGame();
+        if (gameId === 'FiveInARow') {
+            FiveInARow.joinGame(req,res);
         } else if (gameId === 'Uba') {
             //Uba game
         }
     }
 }
 
-const renderCreateGamePage = (req,res) => {
+module.exports.renderCreateGamePage = (req, res) => {
     const gameId = req.params.gameId;
-    res.render('games/createGame', { gameName: gameId });
+    res.render('games/createGame', { gameName: gameId, gameId });
 }
 
-const renderJoinGamePage = (req,res) => {
+module.exports.renderJoinGamePage = (req,res) => {
     const gameId = req.params.gameId; 
-    res.render('games/joinGame', { gameName: gameId });
+    res.render('games/joinGame', { gameName: gameId, gameId });
 }
-
-module.exports = { createGame, joinGame, renderCreateGamePage, renderJoinGamePage };

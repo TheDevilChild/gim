@@ -1,5 +1,21 @@
 <%- include('partials/header.ejs') %>
     <%- include('partials/navbar.ejs') %>
+        <button data-modal-target="#modal">Open Modal</button>
+        <div class="modal" id="modal">
+            <div class="modal-header">
+                <h2>Modal Header</h2>
+                <button data-close-button class="close-button">&times;</button>
+            </div>
+            <div class="modal-body">
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Blanditiis quam ea maiores libero voluptate.
+                Consequuntur ipsa deleniti illo nemo aliquid laboriosam dolor at repellat qui placeat, ea quis dolore a
+                doloremque tempore eum. Modi veniam excepturi laudantium quidem minus maxime beatae nemo minima hic,
+                vitae totam quasi, officiis cum architecto adipisci error, dolorum consectetur dignissimos illum?
+                Quibusdam hic quos, natus ipsum libero dolorem iusto nostrum beatae quam optio ad repudiandae porro
+                maxime aliquam dolore sint laborum corporis quidem vero vel!
+            </div>
+        </div>
+        <div id="overlay" class="modal-overlay"></div>
         <section class="home-main-content">
             <section class="home-section-fullwidth home-section-1">
                 <div class="home-section-fullwidth-content home-section-1-content">
@@ -48,8 +64,7 @@
                             It offers a wide range of multiplayer online games that can be played by people all over the
                             world.
                         </p>
-                        <img src="/images/thinking.png" alt="" id="homeHoveringImg"
-                            class="home-section-2-img ">
+                        <img src="/images/thinking.png" alt="" id="homeHoveringImg" class="home-section-2-img ">
                         <form action="/login">
                             <button class="home-section-btn btn">Login</button>
                         </form>

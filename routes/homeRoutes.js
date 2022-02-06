@@ -1,16 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const {renderGamesListPage, renderHome,render5InARow} = require('../controllers/homeController');
+const {renderGamesListPage, renderHome,renderFiveInARow , renderUserPage} = require('../controllers/homeController');
 
 
 router.route('/')
     .get(renderHome);
 
-router.route('/games/5InARow')
-    .get(render5InARow);
+router.route('/games/FiveInARow')
+    .get(renderFiveInARow);
         
 router.route('/games')
     .get(renderGamesListPage);
+
+router.route('/users')
+    .get(renderUserPage);
 
 
 

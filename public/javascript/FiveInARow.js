@@ -4,17 +4,17 @@ const getBoard = (canvas, numCells = 7) => {
     const cellHeight = Math.floor(canvas.height / numCells);
     const fillCell = (x, y, color) => {
         ctx.fillStyle = color;
-        ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+        ctx.fillRect(x * cellWidth + 1, y * cellHeight + 1, cellWidth - 2, cellHeight - 2);
     };
     const drawCell = () => {
-        ctx.strokeStyle = '#000000';
+        ctx.strokeStyle = '#000';
         ctx.setLineDash([5, 3]);
         ctx.beginPath();
-        for (let i = 0; i < numCells; i++) {
-            ctx.moveTo(i * cellWidth, 0);
-            ctx.lineTo(i * cellWidth, canvas.height);
-            ctx.moveTo(0, i * cellHeight);
-            ctx.lineTo(canvas.width, i * cellHeight);
+        for (let i = 0; i < numCells + 1; i++) {
+            ctx.moveTo(i * cellHeight, 0);
+            ctx.lineTo(i * cellHeight, cellWidth * numCells);
+            ctx.moveTo(0, i * cellWidth);
+            ctx.lineTo(cellHeight * numCells, i * cellWidth);
         }
         ctx.stroke();
     };
@@ -22,13 +22,16 @@ const getBoard = (canvas, numCells = 7) => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
     const renderBoard = (board = []) => {
-        board.forEach((row, y) => {
-            row.forEach((color, x) => {
+        for (let x = 0; x < numCells; x++) {
+            let row = board[x];
+            for (let y = 0; y < numCells; y++) {
+                let color = row[y];
                 color && fillCell(x, y, color);
-            })
-        })
+            }
+        }
+
     }
-    const reset = (board) => {
+    const reset = (board = []) => {
         clear();
         drawCell();
         renderBoard(board);
@@ -36,8 +39,8 @@ const getBoard = (canvas, numCells = 7) => {
 
     const getCellCoordinates = (x, y) => {
         return {
-            x: Math.floor(x / cellWidth),
-            y: Math.floor(y / cellHeight)
+            cellX: Math.floor(x / cellWidth),
+            cellY: Math.floor(y / cellHeight)
         }
     }
     return { fillCell, reset, getCellCoordinates };
@@ -52,73 +55,125 @@ const getClickCoordinates = (element, event) => {
     };
 }
 
-
-
 (() => {
     const canvas = document.getElementById('canvas');
-    const { fillCell, reset, getCellCoordinates } = getBoard(canvas);
+    const { fillCell, reset, getCellCoordinates } = getBoard(canvas, 7);
     const socket = io();
-    // Have to figure out isCreator value
-    const isCreator = false;
 
+    const overlay = document.getElementById('overlay');
+    const startRoundBtn = document.getElementById('startRoundBtn');
+    const readyContainer = document.getElementById('readyContainer');
+    const readyBtn = document.getElementById('readyBtn');
+    const readyCount = document.getElementById('readyCount');
+    const gameHistory = document.getElementById('gameHistory');
+    const roundContainer = document.getElementById('roundContainer');
+    const roundCount = document.getElementById('roundCount');
+    const turnContainer = document.getElementById('turnContainer');
+    const currentTurn = document.getElementById('currentTurn');
+    const turnCount = document.getElementById('turnCount');
+    const messageContent = document.getElementById('messageContent');
+    const messageSendBtn = document.getElementsByClassName('chat-box-message-btn')[0];
+    const copyIcon = document.getElementById('copyIcon');
+    
     socket.on('connect', function () {
-        if (isCreator) {
-            socket.emit('create', { roomId, gameId: 'FiveInARow' });
-        } else {
-            socket.emit('join', { roomId, gameId: 'FiveInARow' });
-        }
+        onSocketConnect(socket, gameId = 'FiveInARow');
     })
-
+    
     socket.on('updateBoard', reset);
-
-    socket.on('updatePlayersList', (playersList) => {
-        // Display all players in the room currently
-    });
 
     socket.on('updateTurn', ({ x, y, color }) => {
         fillCell(x, y, color);
     });
 
-    socket.on('roomFull', () => {
-        // Now since the desired number of players have joined
-        // Enable the ready button for them to start the game
+    socket.on('totalPlayersAndRounds', ({ noOfPlayers, noOfRounds }) => {
+        onSocketUpdateTotalPlayersAndRounds(noOfPlayers, noOfRounds);
     });
 
-    socket.on('enablePlay', () => {
-        // Enable the startRound button which is only
-        //available to the player who created the room
-        //and this is going to be checked using the 
-        //isCreator variable
+    socket.on('updateReadyCount', (readyCount) => {
+        onSocketUpdateReadyCount(readyCount);
     })
 
-    socket.on('startRound', () => {
-        // Do the necessary things to start the round
+    socket.on('roomFull', () => {
+        onSocketRoomFull();
     });
 
+    socket.on('enablePlayButton', () => {
+        onSocketEnablePlayButton(startRoundBtn, readyBtn);
+    })
+
+    const createGameHistoryCard = (lastMove) => {
+        return `
+            <span> ${lastMove.moveNo}) </span>
+            <span class="player">${lastMove.player.username}</span> 
+            <span class="action">${lastMove.action}</span>  
+            on the tile 
+            <span class="coordinates">(${lastMove.move[1] + 1},${lastMove.move[0] + 1})</span>    
+        `;
+    }
+
+    socket.on('updateGameHistory', (lastMove) => {
+        onSocketUpdateGameHistory(gameHistory,lastMove, createGameHistoryCard);
+        turnCount.innerHTML = lastMove.moveNo + 1;
+    })
+
+    startRoundBtn?.addEventListener('click', () => {
+        startBtnOnClick(socket, startRoundBtn, gameId = 'FiveInARow');
+    });
+
+    socket.on('startRound', (roundNumber) => {
+        onSocketStartRound(overlay, readyContainer, roundContainer, roundCount, startRoundBtn, readyCount,roundNumber);
+        turnCount.classList.remove('hidden');
+        turnCount.innerHTML = 1;
+        turnContainer.classList.remove('hidden');
+    });
+
+    socket.on('currentPlayer', (currentPlayer) => {
+        updateCurrentTurnPlayer(currentPlayer, currentTurn);
+    })
+
     socket.on('endRound', () => {
-        // Do the necessary things to end the round
+        onSocketEndRound(readyContainer, readyBtn, startRoundBtn, roundContainer, overlay);
+        turnContainer.classList.add('hidden');
+        turnCount.classList.add('hidden');
     });
 
     socket.on('gameOver', () => {
         // Do the necessary things to end the game
     });
 
-    const onClick = (e) => {
+    const onCellClick = (e) => {
         const { x, y } = getClickCoordinates(canvas, e);
-        socket.emit('turn', { ...getCellCoordinates(x, y), gameId: 'FiveInARow', roomId: roomId, playerId: playerId });
+        const { cellX, cellY } = getCellCoordinates(x, y);
+        socket.emit('turn', { x: cellX, y: cellY, gameId: 'FiveInARow', roomId, playerId: currentUser._id }, function (err) {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log('no error');
+            }
+        });
     }
-    canvas.addEventListener('click', onClick);
+    canvas.addEventListener('click', onCellClick);
 
-    // Update this to allow the user to ready as well as unready for the game
-    const readyBtn = document.getElementById('readyBtn');
+    socket.on('updatePlayersList', (playersList) => {
+        renderPlayersList(playersList);
+    });
+
     readyBtn.addEventListener('click', () => {
-        socket.emit('ready', { gameId: 'FiveInARow', roomId, playerId });
+        readyBtnOnClick(socket, gameId = 'FiveInARow');
     });
 
-    const startRoundBtn = document.getElementById('startRoundBtn');
-    startRoundBtn.addEventListener('click', () => {
-        socket.emit('startRound', { gameId: 'FiveInARow', roomId });
+    messageContent.addEventListener('keyup', (e) => {
+        messageContainerOnEnter(e, messageSendBtn);
+    })
+    messageSendBtn.addEventListener('click', () => {
+        messageSendBtnOnClick(socket);
+    })
+    socket.on('newMessage', (message) => {
+        renderNewMessage(message);
     });
 
+    copyIcon.addEventListener('click', async () => {
+        copyTextHelper();
+    });
 
 })();

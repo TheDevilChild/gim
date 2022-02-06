@@ -1,0 +1,167 @@
+<%- include('partials/header.ejs') %>
+    <%- include('partials/navbar.ejs') %>
+        <script>
+            const roomId = JSON.parse('<%-JSON.stringify(roomId)%>');
+            const isCreator = JSON.parse('<%-JSON.stringify(isCreator)%>');
+        </script>
+        <section class="fiveInARow">
+            <section class="left-sidebar">
+                <div class="start-info">
+                    <div class="roomId-container">
+                        <div class="roomId">
+                            <div class="overlay">Hover to Reveal Room Id</div>
+                            <div id="copyText">
+                                <%= roomId %>
+                            </div>
+                        </div>
+                        <div class="tooltip">
+                            <span class="material-icons roomId-copy-icon" id="copyIcon">
+                                content_copy
+                            </span>
+                            <div class="bottom">
+                                <p id="tooltipText">Click to Copy</p>
+                                <i></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="count-container hidden" id="readyContainer">
+                        <span>Ready: </span>
+                        <span id="readyCount">0</span>/<span class="totalPlayerCount">2</span>
+                    </div>
+                    <div class="count-container" id="joinContainer">
+                        <span>Joined: </span>
+                        <span id="joinedCount">0</span>/<span class="totalPlayerCount">2</span>
+                    </div>
+                    <button id="readyBtn" class="game-btn game-btn-active hidden" data-is-ready="false">Ready</button>
+                    <% if(isCreator){ %>
+                        <button id="startRoundBtn" class="game-btn hidden" data-isEnabled="false"
+                            disabled>Start</button>
+                    <% } %>
+                    <div class="count-container hidden" id="roundContainer">
+                        Round: <span id="roundCount"> 1 </span>/<span id="totalRoundCount"> 2 </span>
+                    </div>
+                    <div class="count-container hidden" id="turnContainer">
+                        <span id="currentTurn"> Chuhu's Turn </span>
+                    </div>
+                </div>
+                <div class="history">
+                    <span id="turnCount" class="hidden">1</span>
+                    <ul class="game-history" id="gameHistory">
+                        <li class="game-history-card">
+                            <span class="player">Pratyush</span>
+                            <span class="action">attacked</span>
+                            on the tile
+                            <span class="coordinates">(0,0)</span>
+                        </li>
+                        <li class="game-history-card">
+                            Pratyush attacked on the tile (0,0)
+                        </li>
+                        <li class="game-history-card">
+                            Pratyush attacked on the tile (0,0)
+                        </li>
+                        <li class="game-history-card">
+                            Pratyush attacked on the tile (0,0)
+                        </li>
+                        <li class="game-history-card">
+                            Pratyush attacked on the tile (0,0)
+                        </li>
+                        <li class="game-history-card">
+                            Pratyush attacked on the tile (0,0)
+                        </li>
+                        <li class="game-history-card">
+                            Pratyush attacked on the tile (0,0)
+                        </li>
+                        <li class="game-history-card">
+                            Pratyush attacked on the tile (0,0)
+                        </li>
+                        <li class="game-history-card">
+                            Plsdjfl attacked on the tile (0,0)
+                        </li>
+                    </ul>
+                </div>
+            </section>
+            <section class="main-content">
+                <div class="game-overlay" id="overlay"></div>
+                <div>
+                    <canvas height="400" width="400" id="canvas"></canvas>
+                </div>
+            </section>
+            <section class="right-sidebar">
+                <div class="players-list">
+                    <h3>Players</h3>
+                    <ul class="players" id="players">
+                    </ul>
+                </div>
+                <div class="chat-box">
+                    <ul id="messages" class="chat-messages">
+                        <li class="message">
+                            <div class="message-title">
+                                <h4 class="message-sender">From</h4>
+                                <span class="message-time">10:45 AM</span>
+                            </div>
+                            <div class="message-body">
+                                <p>This is the message</p>
+                            </div>
+                        </li>
+                        <li class="message">
+                            <div class="message-title">
+                                <h4 class="message-sender">From</h4>
+                                <span class="message-time">10:45 AM</span>
+                            </div>
+                            <div class="message-body">
+                                <p>This is the message</p>
+                            </div>
+                        </li>
+                        <li class="message">
+                            <div class="message-title">
+                                <h4 class="message-sender">From</h4>
+                                <span class="message-time">10:45 AM</span>
+                            </div>
+                            <div class="message-body">
+                                <p>This is the message</p>
+                            </div>
+                        </li>
+                        <li class="message">
+                            <div class="message-title">
+                                <h4 class="message-sender">Pratyush</h4>
+                                <span class="message-time">10:45 AM</span>
+                            </div>
+                            <div class="message-body">
+                                <p>How are you Doing??</p>
+                            </div>
+                        </li>
+                        <li class="message">
+                            <div class="message-title">
+                                <h4 class="message-sender">From</h4>
+                                <span class="message-time">10:45 AM</span>
+                            </div>
+                            <div class="message-body">
+                                <p>This is the message i have sent you this morning</p>
+                            </div>
+                        </li>
+                        <li class="message">
+                            <div class="message-title">
+                                <h4 class="message-sender">From</h4>
+                                <span class="message-time">10:45 AM</span>
+                            </div>
+                            <div class="message-body">
+                                <p>This is the message</p>
+                            </div>
+                        </li>
+                    </ul>
+                    <div class="chat-input-container">
+                        <input type="text" name="" placeholder="Type a message here.." class="chat-box-input"
+                            id="messageContent">
+                        <div class="chat-box-message-btn">
+                            <span class="material-icons">
+                                send
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
+        <script src="/javascript/game.js"></script>
+        <script src="/javascript/FiveInARow.js"></script>
+
+        <%- include('partials/footer.ejs') %>

@@ -30,6 +30,33 @@ const boardSchema = new mongoose.Schema({
 });
 const Board = mongoose.model('Board', boardSchema);
 
+const historySchema = new mongoose.Schema({
+    player: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    action: {
+        type: String,
+        enum: ['attacked', 'defended'],
+        required: true
+    },
+    round: {
+        type: Number,
+        required: true
+    },
+    move: {
+        type: [Number],
+        required: true
+    },
+    moveNo: {
+        type: Number,
+        required: true
+    }
+});
+
+const History = mongoose.model('History', historySchema);
+
 const fiveInARowSchema = new mongoose.Schema({
     // See if we will need board or boards
     boards: {
@@ -102,9 +129,14 @@ const fiveInARowSchema = new mongoose.Schema({
         type: String,
         enum: ['waiting', 'playing', 'finished'],
         default: 'waiting'
+    },
+    gameHistory: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'History',
+        default: []
     }
 });
 
 const FiveInARow = mongoose.model('FiveInARow', fiveInARowSchema);
-module.exports = { FiveInARow, Board, Cell };
+module.exports = { FiveInARow, Board, Cell, History };
 
