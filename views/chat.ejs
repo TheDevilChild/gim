@@ -1,17 +1,36 @@
 <%- include('partials/header.ejs') %>
     <%- include('partials/navbar.ejs') %>
-    <section class="chatPage">
-        <section class="friendsList" id="friendsList">
-
+        <section class="chat-page">
+            <section class="friends-list-container" id="friendsList">
+            </section>
+            <section id="chatContainer" class="chat-container">
+                <div class="chat-header-data">
+                    <img class="chat-header-data-friendImg" src="/images/img1.png" alt="">
+                    <div class="chat-header-data-friendName">
+                        <h3>John Doe</h3>
+                    </div>
+                </div>
+                <div id="messageContainer" class="chat-message-container">
+                    <div class="message-container-received message-container">
+                        <div class="message-text">
+                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quisquam, quos.</p>
+                        </div>
+                    </div>
+                    <div class="message-container-sent message-container">
+                        <div class="message-text">
+                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quisquam, quos.</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="chatInput" class="chat-input-container">
+                    <input type="text" id="chatInputField" class="chat-input-field" placeholder="Type a message...">
+                    <button id="sendButton" class="message-send-button">
+                        <span class="material-icons material-icons-outlined">
+                            send
+                            </span>
+                    </button>
+                </div>
+            </section>
         </section>
-        <section id="chatContainer">
-            <div id="messageContainer">
-
-            </div>
-            <div id="chatInput">
-                <input type="text" id="chatInputField" placeholder="Type a message...">
-                <button id="sendButton">Send</button>
-        </section>
-    </section>
-    <script src="/javascript/chat.js"></script>
-    <%- include('partials/footer.ejs') %>
+        <script src="/javascript/chat.js"></script>
+        <%- include('partials/footer.ejs') %>

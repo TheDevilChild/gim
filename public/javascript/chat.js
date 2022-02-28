@@ -12,16 +12,35 @@
         })
     }
     const createFriendCard = (friend) => {
-        return `<div id="${friend._id}" class="user-info chat-list">
-                    <img src="${friend.friendId.profilePicture}" class = "chat-list-img"></img>
-                    <span class="chat-list-user">
-                        ${friend.friendId.firstName} ${friend.friendId.lastName}
-                    </span>
-                </div>`
+        // return `<div id="${friend._id}" class="user-info chat-list">
+        //             <img src="${friend.friendId.profilePicture}" class = "chat-list-img"></img>
+        //             <span class="chat-list-user">
+        //                 ${friend.friendId.firstName} ${friend.friendId.lastName}
+        //             </span>
+        //         </div>`;
+        return `<div class="friend-container user-info chat-list" id="${friend._id}" >
+                    <div class="friend-avatar-container">
+                        <img class="friend-avatar" src="${friend.friendId.profilePicture}" alt="">
+                        <div class="is-friend-online offline">
+                        </div>
+                    </div>
+                    <div class="friend-details-container">
+                        <div class="friend-name">
+                            <h3> ${friend.friendId.firstName} ${friend.friendId.lastName}</h3>
+                        </div>
+                        <div class="friend-last-message">
+                            <p>Lorem ipsum dolor sit...</p>
+                        </div>
+                    </div>
+                    <div class="friend-last-message-time">
+                        <p>12:00</p>
+                    </div>
+                </div>`;
     }
     chatList.addEventListener('click', async (e) => {
         if (e.target.closest('.user-info')) {
             const id = e.target.closest('.user-info').id;
+            console.log(id);
             const chat = await axios.get(`/api/chat/${id}`);
             console.log(chat.data);
             renderChat(chat.data.chat);
@@ -55,6 +74,7 @@
         return `<div class="message-container-${sentOrReceived} message-container">
                     <div class="message">
                         ${message.content}
+                        ${(new Date(message.createdAt)).toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit'})} 
                     </div>
                 </div>`;
     }
