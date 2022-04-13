@@ -12,12 +12,6 @@
         })
     }
     const createFriendCard = (friend) => {
-        // return `<div id="${friend._id}" class="user-info chat-list">
-        //             <img src="${friend.friendId.profilePicture}" class = "chat-list-img"></img>
-        //             <span class="chat-list-user">
-        //                 ${friend.friendId.firstName} ${friend.friendId.lastName}
-        //             </span>
-        //         </div>`;
         return `<div class="friend-container user-info chat-list" id="${friend._id}" >
                     <div class="friend-avatar-container">
                         <img class="friend-avatar" src="${friend.friendId.profilePicture}" alt="">
@@ -63,7 +57,6 @@
             })
         }
     };
-
     const createMessage = (message) => {
         let sentOrReceived = '';
         if (message.sender._id != currentUser._id) {
@@ -99,6 +92,5 @@
             sendButton.click();
         }
     });
-    
     await renderChatsList();
 })();

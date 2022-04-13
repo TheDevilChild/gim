@@ -34,6 +34,8 @@ const readyBtnOnClick = (socket, gameId) => {
     }
 };
 
+
+
 const messageContainerOnEnter = (e, messageSendBtn) => {
     if (e.key == 'Enter') {
         messageSendBtn.click();

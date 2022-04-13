@@ -14,12 +14,13 @@ module.exports.registerUser = async(req, res, next) => {
             res.redirect('/');
         })
     } catch (e) {
-        res.redirect({title: '5InARow', showNavbar: true, showFooter: true},'/register');
+        console.log(e);
+        res.redirect('/register');
     }
 }
 
 module.exports.renderLogin = (req, res, next) => {
-    res.render('users/login', { title: '5InARow', showNavbar: true, showFooter: true});
+    res.render('users/login');
 }
 
 module.exports.loginUser = (req, res, next) => {

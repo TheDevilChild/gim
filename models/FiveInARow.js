@@ -139,4 +139,3 @@ const fiveInARowSchema = new mongoose.Schema({
 
 const FiveInARow = mongoose.model('FiveInARow', fiveInARowSchema);
 module.exports = { FiveInARow, Board, Cell, History };
-

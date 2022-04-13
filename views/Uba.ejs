@@ -1,0 +1,21 @@
+<%- include('partials/header.ejs') %>
+    <%- include('partials/navbar.ejs') %>
+        <script>
+            const roomId = JSON.parse('<%-JSON.stringify(roomId)%>');
+            const isCreator = JSON.parse('<%-JSON.stringify(isCreator)%>');
+        </script>
+        <section class="Uba">
+            <section class="left-sidebar">
+                <%- include('partials/startInfoLeftSidebar.ejs') %>
+            </section>
+            <section class="main-content">
+                <div class="game-overlay" id="overlay"></div>
+            </section>
+            <section class="right-sidebar">
+                <%- include('partials/playersListRightSidebar.ejs') %>
+                <%- include('partials/chatRightSidebar.ejs') %>
+            </section>
+        </section>
+        <script src="/javascript/game.js"></script>
+        <script src="/javascript/Uba.js"></script>
+        <%- include('partials/footer.ejs') %>

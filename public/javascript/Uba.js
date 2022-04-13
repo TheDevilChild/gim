@@ -1,17 +1,102 @@
 (() => {
     const socket = io();
+
+    const overlay = document.getElementById('overlay');
+    const startRoundBtn = document.getElementById('startRoundBtn');
+    const readyContainer = document.getElementById('readyContainer');
+    const readyBtn = document.getElementById('readyBtn');
+    const readyCount = document.getElementById('readyCount');
+    const roundContainer = document.getElementById('roundContainer');
+    const roundCount = document.getElementById('roundCount');
+    const currentTurn = document.getElementById('currentTurn');
+    const messageContent = document.getElementById('messageContent');
+    const messageSendBtn = document.getElementsByClassName('chat-box-message-btn')[0];
+    const copyIcon = document.getElementById('copyIcon');
+    const gameOverOverlay = document.getElementById('gameOverOverlay');
+    const gameOverMessage = document.getElementById('gameOverMessage');
+    
     let lockedBids = 0;
-    let isCreator = false;
     let userBids = new Array(3);
 
     socket.on('connect', function () {
-        if (isCreator) {
-            socket.emit('create', { roomId, gameId: 'Uba' });
-        } else {
-            socket.emit('join', { roomId, gameId: 'Uba' });
-        }
+        onSocketConnect(socket, gameId = 'Uba');
     })
 
+    socket.on('totalPlayersAndRounds', ({ noOfPlayers, noOfRounds }) => {
+        onSocketUpdateTotalPlayersAndRounds(noOfPlayers, noOfRounds);
+    });
+
+    socket.on('updateReadyCount', (readyCount) => {
+        onSocketUpdateReadyCount(readyCount);
+    });
+
+    socket.on('roomFull', () => {
+        onSocketRoomFull();
+    });
+
+    socket.on('enablePlayButton', () => {
+        onSocketEnablePlayButton(startRoundBtn, readyBtn);
+    });
+
+    startRoundBtn?.addEventListener('click', () => {
+        startBtnOnClick(socket, startRoundBtn, gameId = 'Uba');
+    });
+
+    socket.on('startRound', (roundNumber) => {
+        onSocketStartRound(overlay, readyContainer, roundContainer, roundCount, startRoundBtn, readyCount,roundNumber);
+    });
+
+    socket.on('currentPlayer', (currentPlayer) => {
+        updateCurrentTurnPlayer(currentPlayer, currentTurn);
+    });
+
+    socket.on('endRound', () => {
+        onSocketEndRound(readyContainer, readyBtn, startRoundBtn, roundContainer, overlay);
+    });
+
+
+    // socket.on('gameOver', ({ game }) => {
+    //     // Do the necessary things to end the game
+    //     console.log(game);
+    //     console.log(currentUser);
+    //     if (game.winner === null) {
+    //         gameOverOverlay.classList.add('draw-overlay');
+    //         gameOverMessage.innerHTML = 'Game ended in a draw!';
+    //     }
+    //     else if (game.winner._id === currentUser._id) {
+    //         gameOverOverlay.classList.add('winner-overlay');
+    //         gameOverMessage.innerHTML = 'You won the game!';
+    //     } else if(game.loser._id === currentUser._id) {
+    //         gameOverOverlay.classList.add('loser-overlay');
+    //         gameOverMessage.innerHTML = 'You lost the game!';
+    //     }
+    //     gameOverOverlay.classList.remove('hidden');
+    // });
+
+    socket.on('updatePlayersList', (playersList) => {
+        renderPlayersList(playersList);
+    });
+
+    readyBtn.addEventListener('click', () => {
+        readyBtnOnClick(socket, gameId = 'Uba');
+    });
+
+    messageContent.addEventListener('keyup', (e) => {
+        messageContainerOnEnter(e, messageSendBtn);
+    });
+
+    messageSendBtn.addEventListener('click', () => {
+        messageSendBtnOnClick(socket);
+    });
+
+    socket.on('newMessage', (message) => {
+        renderNewMessage(message);
+    });
+
+    copyIcon.addEventListener('click', async () => {
+        copyTextHelper();
+    });
+    
     for (let i = 1; i <= 3; i++) {
         const bidBtn = document.getElementById(`bid-btn-${i}`);
         const bidInput = document.getElementById(`bid-input-${i}`);

@@ -117,8 +117,8 @@ io.on('connection', (socket) => {
         socket.join(roomId);
         io.to(roomId).emit('updatePlayersList', await eval(gameId).getPlayersList(roomId));
         socket.emit('totalPlayersAndRounds',{noOfPlayers, noOfRounds});
-        socket.emit('currentPlayer', await eval(gameId).getCurrentPlayer(roomId));
         if (gameId === 'FiveInARow') {
+            socket.emit('currentPlayer', await eval(gameId).getCurrentPlayer(roomId));
             io.to(roomId).emit('updateBoard', await FiveInARow.getBoard(roomId));
         } else if (gameId === 'Uba') {
             
@@ -131,23 +131,28 @@ io.on('connection', (socket) => {
         const noOfRounds = await eval(gameId).getNoOfRounds(roomId);
         socket.join(roomId);
         socket.emit('totalPlayersAndRounds',{noOfPlayers, noOfRounds});
-        socket.emit('currentPlayer', await eval(gameId).getCurrentPlayer(roomId));
         const playersList = await eval(gameId).getPlayersList(roomId);
         io.to(roomId).emit('updatePlayersList', playersList);
         if (playersList.length === await eval(gameId).getNoOfPlayers(roomId)) {
             io.to(roomId).emit('roomFull');
         }
         if (gameId === 'FiveInARow') {
+            socket.emit('currentPlayer', await eval(gameId).getCurrentPlayer(roomId));
             io.to(roomId).emit('updateBoard', await FiveInARow.getBoard(roomId)); 
         }
     })
 
     socket.on('ready', async (params) => {
         const { gameId, roomId, playerId } = params;
-        await eval(gameId).setReady(roomId, playerId);
-        io.to(roomId).emit('updateReadyCount',await eval(gameId).getReadyCount(roomId));
-        if (await eval(gameId).areAllReady(roomId)) {
-            io.to(roomId).emit('enablePlayButton');
+        try {
+            await eval(gameId).setReady(roomId, playerId);
+            io.to(roomId).emit('updateReadyCount',await eval(gameId).getReadyCount(roomId));
+            if (await eval(gameId).areAllReady(roomId)) {
+                io.to(roomId).emit('enablePlayButton');
+            }
+        } catch (e) {
+            console.log("werew");
+            console.log(e);
         }
     })
 

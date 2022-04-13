@@ -74,6 +74,8 @@ const getClickCoordinates = (element, event) => {
     const messageContent = document.getElementById('messageContent');
     const messageSendBtn = document.getElementsByClassName('chat-box-message-btn')[0];
     const copyIcon = document.getElementById('copyIcon');
+    const gameOverOverlay = document.getElementById('gameOverOverlay');
+    const gameOverMessage = document.getElementById('gameOverMessage');
     
     socket.on('connect', function () {
         onSocketConnect(socket, gameId = 'FiveInARow');
@@ -113,7 +115,7 @@ const getClickCoordinates = (element, event) => {
 
     socket.on('updateGameHistory', (lastMove) => {
         onSocketUpdateGameHistory(gameHistory,lastMove, createGameHistoryCard);
-        turnCount.innerHTML = lastMove.moveNo + 1;
+        turnCount.innerHTML = lastMove.moveNo;
     })
 
     startRoundBtn?.addEventListener('click', () => {
@@ -123,7 +125,7 @@ const getClickCoordinates = (element, event) => {
     socket.on('startRound', (roundNumber) => {
         onSocketStartRound(overlay, readyContainer, roundContainer, roundCount, startRoundBtn, readyCount,roundNumber);
         turnCount.classList.remove('hidden');
-        turnCount.innerHTML = 1;
+        turnCount.innerHTML = 0;
         turnContainer.classList.remove('hidden');
     });
 
@@ -137,8 +139,22 @@ const getClickCoordinates = (element, event) => {
         turnCount.classList.add('hidden');
     });
 
-    socket.on('gameOver', () => {
+    socket.on('gameOver', ({ game }) => {
         // Do the necessary things to end the game
+        console.log(game);
+        console.log(currentUser);
+        if (game.winner === null) {
+            gameOverOverlay.classList.add('draw-overlay');
+            gameOverMessage.innerHTML = 'Game ended in a draw!';
+        }
+        else if (game.winner._id === currentUser._id) {
+            gameOverOverlay.classList.add('winner-overlay');
+            gameOverMessage.innerHTML = 'You won the game!';
+        } else if(game.loser._id === currentUser._id) {
+            gameOverOverlay.classList.add('loser-overlay');
+            gameOverMessage.innerHTML = 'You lost the game!';
+        }
+        gameOverOverlay.classList.remove('hidden');
     });
 
     const onCellClick = (e) => {

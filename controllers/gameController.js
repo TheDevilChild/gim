@@ -1,7 +1,7 @@
 const gameslist = ['FiveInARow', 'Uba'];
 const express = require('express');
 const  FiveInARow  = require('../controllers/FiveInARowController');
-const Uba = require('../models/Uba');
+const Uba = require('../controllers/UbaController');
 const {v4: uuidv4} = require('uuid');
 
 module.exports.createGame = async (req, res) => {
@@ -10,9 +10,10 @@ module.exports.createGame = async (req, res) => {
     // const roomId  = uuidv4();
     if (gameslist.includes(gameId)) {
         if (gameId === 'FiveInARow') {
-            FiveInARow.createGame(req,res);
+            await FiveInARow.createGame(req,res);
         } else if (gameId === 'Uba') {
-            //Uba game
+            console.log('In UBA');
+            await Uba.createGame(req,res);
         }
     }
 }
@@ -25,7 +26,7 @@ module.exports.joinGame = async (req,res) => {
         if (gameId === 'FiveInARow') {
             FiveInARow.joinGame(req,res);
         } else if (gameId === 'Uba') {
-            //Uba game
+            Uba.joinGame(req, res);
         }
     }
 }

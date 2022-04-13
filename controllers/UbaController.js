@@ -1,8 +1,12 @@
 const { BidArrayElement, BidArray, Uba, ScoreOfRound, AvgScoreOfRound } = require('../models/Uba');
 const { v4: uuidv4 } = require('uuid');
 
-module.exports.createGame = async (req, res) => {
+const createGame = async (req, res) => {
     const { password, noOfPlayers, noOfRounds } = req.body;
+    if (password.trim() === '') {
+        req.flash('danger', 'Password is required');
+        return res.redirect('/play/Uba/create');
+    }
     const roomId = uuidv4();
     const game = await new Uba({
         roomId: roomId,
@@ -27,8 +31,8 @@ module.exports.createGame = async (req, res) => {
             scoreOfRound.avgScore.push(0);
             avgScoreOfRound.avgScore.push(0);
         }
-        scoreOfRound.save();
-        avgScoreOfRound.save();
+        await scoreOfRound.save();
+        await avgScoreOfRound.save();
         game.scores.push(scoreOfRound._id);
         game.avgScores.push(avgScoreOfRound._id);
     }
@@ -39,81 +43,120 @@ module.exports.createGame = async (req, res) => {
                 bidValue: j,
                 bidUsers: []
             });
-            bidArrayElement.save();
+            await bidArrayElement.save();
             BidArray.bidArray.push(bidArrayElement._id);
         }
-        bidArray.save();
+        await bidArray.save();
         game.bids.push(bidArray._id);
     }
-    game.save();
-    res.render('games/Uba', { game: game });
+    console.log('hi');
+    await game.save();
+    res.render('Uba', { title: 'Uba', showNavbar: true, showFooter: true, roomId, isCreator: true });
+
 };
 
-module.exports.joinGame = async (req, res) => {
+const joinGame = async (req, res) => {
+    console.log('hello');
     const { roomId, password } = req.body;
     const game = await Uba.findOne({ roomId: roomId, password: password });
-    if (game && game.status !== 'finished' && !game.players.contains(req.user._id)) {
+    if (roomId.trim() === '' || password.trim() === '') {
+        req.flash('danger', 'Room Id and Password are required');
+        return res.redirect('/play/Uba/join');
+    }
+    if (game && game.status !== 'finished' && !game.players.includes(req.user._id)) {
         if (game.players.length < game.noOfPlayers) {
             game.players.push(req.user._id);
             if (game.players.length === game.noOfPlayers) {
                 game.status = 'playing';
             }
-            game.save();
+            await game.save();
         }
         else {
             res.flash('error', 'Game is full');
             return res.redirect('/');
         }
     }
-    res.render('games/Uba', { game: game });
+    res.render('Uba', { title: 'Uba', showNavbar: true, showFooter: true, roomId, isCreator: false });
 }
 
-module.exports.getPlayersList = async (roomId) => {
+const getPlayersList = async (roomId) => {
     const game = await Uba.findOne({ roomId: roomId }).populate('players');
     return game.players;
 }
 
-module.exports.getBidArray = async (roomId, round) => {
+const getBidArray = async (roomId, round) => {
     const game = await Uba.findOne({ roomId: roomId }).populate('bids');
     return game.bids[round];
 }
 
-module.exports.getScoreOfRound = async (roomId, round) => {
+const getScoreOfRound = async (roomId, round) => {
     const game = await Uba.findOne({ roomId: roomId }).populate('scores');
     return game.scores[round];
 }
 
-module.exports.getAvgScoreOfRound = async (roomId, round) => {
+const getAvgScoreOfRound = async (roomId, round) => {
     const game = await Uba.findOne({ roomId: roomId }).populate('avgScores');
     return game.avgScores[round];
 }
 
-module.exports.getFinalScore = async (roomId) => {
+const getFinalScore = async (roomId) => {
     const game = await Uba.findOne({ roomId: roomId }).populate('finalScore');
     return game.finalScore;
 }
 
-module.getNoOfPlayers = async (roomId) => {
+const getNoOfPlayers = async (roomId) => {
+    const game = await Uba.find({ roomId: roomId });
+    return game[0].noOfPlayers;
+}
+
+const setReady = async (roomId, playerId) => {
+    // try {
+    //     const game = await Uba.findOne({ roomId: roomId });
+    //     game.playersReady[game.players.indexOf(playerId)] = true;
+    //     await game.save();
+    // } catch (e) {
+    //     console.log(e);
+    // }
+
     const game = await Uba.findOne({ roomId: roomId });
-    return game.noOfPlayers;
+    console.log(game.playersReady);
+    for (let i = 0; i < game.players.length; i++) {
+        if (game.players[i]._id.equals(playerId)) {
+            if (!game.playersReady[i]) {
+                game.playersReady[i] = true;
+                await game.save();
+            }
+            break;
+        }
+    }
+    console.log(game.playersReady);
 }
 
-module.exports.setReady = async (roomId, playerId) => {
-    const game = await Uba.findById(roomId);
-    game.playersReady[game.players.indexOf(playerId)] = true;
-    game.save();
+const clearReady = async (roomId, playerId) => {
+    try {
+        const game = await Uba.findOne({ roomId: roomId });
+        game.playersReady[game.players.indexOf(playerId)] = false;
+        await game.save();
+    }
+    catch (e) {
+        console.log(2343);
+        console.log(e);
+    }
 }
 
-module.exports.clearReady = async (roomId, playerId) => {
-    const game = await Uba.findById(roomId);
-    game.playersReady[game.players.indexOf(playerId)] = false;
-    game.save();
-}
-
-module.exports.areAllReady = async (roomId) => {
-    const game = await Uba.findById(roomId);
-    const ready = game.playersReady.every(element => element === true);
-    return ready;
+const areAllReady = async (roomId) => {
+    try {
+        const game = await Uba.findOne({ roomId: roomId });
+        for (let i = 0; i < game.playersReady.length; i++) {
+            if (!game.playersReady[i]) {
+                return false;
+            }
+        }
+        return true;
+    } catch (e) {
+        console.log(23);
+        console.log(e);
+    }
 }
 
 const clearReadyAll = async (roomId) => {
@@ -121,10 +164,26 @@ const clearReadyAll = async (roomId) => {
     game.playersReady.forEach(element => {
         element = false;
     });
-    game.save();
+    await game.save();
 }
 
-module.exports.makeBid = async (roomId, playerId, bidValues) => {
+const getReadyCount = async (roomId) => {
+    const game = await Uba.find({ roomId: roomId });
+    let count = 0;
+    game[0].playersReady.forEach(player => {
+        if (player) {
+            count++;
+        }
+    });
+    return count;
+}
+
+const getCurrentRoundNumber = async (roomId) => {
+    const game = await Uba.find({ roomId: roomId });
+    return game[0].currentRound + 1;
+}
+
+const makeBid = async (roomId, playerId, bidValues) => {
     const game = await Uba.findOne({ roomId: roomId }).populate('bids');
     const bidArray = await BidArray.findById(game.bids[game.currentRound]);
     const avgScoreOfRound = await AvgScoreOfRound.findById(game.avgScores[game.currentRound]);
@@ -134,10 +193,10 @@ module.exports.makeBid = async (roomId, playerId, bidValues) => {
         const bidArrayElement = await BidArrayElement.findById(bidArray.bidArray[bidValues[i]]);
         bidArrayElement.bidUsers.push(playerId);
         avgScoreOfRound[playerIndex] += bidValues[i];
-        bidArrayElement.save();
+        await bidArrayElement.save();
     }
     avgScoreOfRound[playerIndex] = (avgScoreOfRound[playerIndex] / bidValues.length);
-    avgScoreOfRound.save();
+    await avgScoreOfRound.save();
     game.playersToBid[playerIndex] = false;
     if (game.playersToBid.every(element => element === false)) {
         roundOver = true;
@@ -149,11 +208,11 @@ module.exports.makeBid = async (roomId, playerId, bidValues) => {
         game.status = 'finished';
         gameOver = true;
     }
-    game.save();
+    await game.save();
     return { roundOver, gameOver };
 }
 
-module.exports.calculateRoundResult = async (roomId) => {
+const calculateRoundResult = async (roomId) => {
     const game = await Uba.findOne({ roomId: roomId });
     const bidArray = await BidArray.findById(game.bids[game.currentRound - 1]).populate('bidArray');
     const scoreOfRound = await ScoreOfRound.findById(game.scores[game.currentRound - 1]);
@@ -184,11 +243,37 @@ module.exports.calculateRoundResult = async (roomId) => {
         }
         game.finalScore[i] += scoreOfRound[i];
     }
-    scoreOfRound.save();
-    game.save();
+    await scoreOfRound.save();
+    await game.save();
 }
 
-module.exports.getFinishedGame = async (roomId) => {
+const getFinishedGame = async (roomId) => {
     const game = await Uba.findById(roomId);
     return game;
 }
+
+const getNoOfRounds = async (roomId) => {
+    const game = await Uba.find({ roomId: roomId });
+    return game[0].noOfRounds;
+}
+
+module.exports = {
+    createGame,
+    joinGame,
+    getPlayersList,
+    getBidArray,
+    getScoreOfRound,
+    getAvgScoreOfRound,
+    getFinalScore,
+    getNoOfPlayers,
+    setReady,
+    clearReady,
+    areAllReady,
+    clearReadyAll,
+    makeBid,
+    calculateRoundResult,
+    getFinishedGame,
+    getNoOfRounds,
+    getReadyCount,
+    getCurrentRoundNumber
+};

@@ -1,0 +1,38 @@
+<div class="start-info">
+    <div class="roomId-container">
+        <div class="roomId">
+            <div class="overlay">Hover to Reveal Room Id</div>
+            <div id="copyText">
+                <%= roomId %>
+            </div>
+        </div>
+        <div class="tooltip">
+            <span class="material-icons roomId-copy-icon" id="copyIcon">
+                content_copy
+            </span>
+            <div class="bottom">
+                <p id="tooltipText">Click to Copy</p>
+                <i></i>
+            </div>
+        </div>
+    </div>
+    <div class="count-container hidden" id="readyContainer">
+        <span>Ready: </span>
+        <span id="readyCount">0</span>/<span class="totalPlayerCount">2</span>
+    </div>
+    <div class="count-container" id="joinContainer">
+        <span>Joined: </span>
+        <span id="joinedCount">0</span>/<span class="totalPlayerCount">2</span>
+    </div>
+    <button id="readyBtn" class="game-btn game-btn-active hidden" data-is-ready="false">Ready</button>
+    <% if(isCreator){ %>
+        <button id="startRoundBtn" class="game-btn hidden" data-isEnabled="false"
+            disabled>Start</button>
+    <% } %>
+    <div class="count-container hidden" id="roundContainer">
+        Round: <span id="roundCount"> 1 </span>/<span id="totalRoundCount"> 2 </span>
+    </div>
+    <div class="count-container hidden" id="turnContainer">
+        <span id="currentTurn"> Pratyush's Turn </span>
+    </div>
+</div>

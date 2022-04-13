@@ -65,7 +65,7 @@ const ubaSchema = new mongoose.Schema({
     },
     noOfPlayers: {
         type: Number,
-        default: 3
+        default: 2
     },
     currentRound: {
         type: Number,
