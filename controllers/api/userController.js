@@ -44,6 +44,7 @@ module.exports.acceptFriendRequest = async (req, res) => {
         const request = await FriendRequest.findByIdAndDelete(requestId);
         const user = await User.findById(request.sender);
         const friend = await User.findById(request.receiver);
+
         const chat = new Chat();
         chat.members.push(request.sender);
         chat.members.push(request.receiver);
@@ -95,8 +96,8 @@ module.exports.sendFriendRequest = async (req, res) => {
     try {
         //Put a check if none of the sender or receiver is the currentUser
         const { id, friendId } = req.params;
-        const user = await User.findById(id);
-        const friend = await User.findById(friendId);
+        const user = await User.findOne({ _id: id });
+        const friend = await User.findOne({ _id: friendId });
         const friendRequest = new FriendRequest({
             sender: id,
             receiver: friendId
@@ -109,5 +110,14 @@ module.exports.sendFriendRequest = async (req, res) => {
         res.json({ id: friendRequest._id });
     } catch (err) {
         res.json({ err });
+    }
+}
+
+module.exports.searchUsersQuery = async (req, res) => {
+    try {
+        const users = await User.find({ $or: [{ username: { $regex: req.query.query, $options: 'i' } }, { firstName: { $regex: req.query.query, $options: 'i' } }, { lastName: { $regex: req.query.query, $options: 'i' } }] });
+        res.json(users);
+    } catch (err) {
+        res.json(err);
     }
 }

@@ -172,7 +172,6 @@ const isWinningTurn = async (roomId, x, y) => {
             const cell = await Cell.findById(board.cells[x * (MAX_CELL_INDEX + 1) + y]);
             val += cell.value + ' ';
         }
-        console.log(val);
     }
     for (let dx = -1; dx < 2; dx++) {
         for (let dy = -1; dy < 2; dy++) {
@@ -196,7 +195,6 @@ const isWinningTurn = async (roomId, x, y) => {
 
 const calculateWinner = async (roomId) => {
     const game = await FiveInARow.findOne({ roomId: roomId });
-    console.log(game);
     if (game.madeFiveInARow[0] && game.madeFiveInARow[1]) {
         if (game.noOfMoves[0] < game.noOfMoves[1]) {
             game.winner = game.players[0];
@@ -227,8 +225,6 @@ const calculateWinner = async (roomId) => {
             game.loser = null;
         }
     }
-    console.log(game.winner);
-    console.log(game.loser);
     await game.save();
 }
 
@@ -251,7 +247,6 @@ const makeTurn = async (roomId, x, y) => {
             if (game[0].currentRound === game[0].maxRounds) {
                 gameOver = true;
                 game[0].status = 'finished';
-                console.log('i am here');
                 await calculateWinner(roomId);
             }else {
                 const temp = game[0].currentAttacker;

@@ -12,7 +12,6 @@ module.exports.createGame = async (req, res) => {
         if (gameId === 'FiveInARow') {
             await FiveInARow.createGame(req,res);
         } else if (gameId === 'Uba') {
-            console.log('In UBA');
             await Uba.createGame(req,res);
         }
     }

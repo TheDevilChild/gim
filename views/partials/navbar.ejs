@@ -1,3 +1,4 @@
+<div id="modal-overlay"></div>
 <nav>
     <div class="nav-wrapper">
         <a href="/" class="brand-logo">
@@ -15,28 +16,35 @@
                 <a href="/chat">Social</a>
             </li>
         </ul>
+
         <ul class=" nav-right">
-            <li>
-                <form action="/login">
-                    <button class="nav-btn btn">Login</button>
-                </form>
-            </li>
-            <li>
-                <form action="/register">
-                    <button class="nav-btn btn">Register</button>
-                </form>
-            </li>
-            <li>
-                <form action="/play/Uba/create">
-                    <button class="nav-btn btn">Create Game</button>
-                </form>
-            </li>
-            <li>
-                <form action="/play/Uba/join">
-                    <button class="nav-btn btn">Join Game</button>
-                </form>
-            </li>
+            <% if(!currentUser) { %>
+                <li>
+                    <form action="/login">
+                        <button class="nav-btn btn">Login</button>
+                    </form>
+                </li>
+                <li>
+                    <form action="/register">
+                        <button class="nav-btn btn">Register</button>
+                    </form>
+                </li>
+                <% } else { %>
+                    <div id="nav-search" class="search-bar">
+                        <input type="text" placeholder="Search.." id="search" autocomplete="off">
+                        <div id="modal-container">
+                            <div class="modal" id="search-modal">
+                            </div>
+                        </div>
+                    </div>
+                    <li>
+                        <form action="/logout">
+                            <button class="nav-btn btn">Logout</button>
+                        </form>
+                    </li>
+                    <% } %>
         </ul>
     </div>
 </nav>
 </nav>
+<script src="/javascript/navbar.js"></script>

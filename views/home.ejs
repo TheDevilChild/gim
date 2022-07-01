@@ -1,7 +1,6 @@
-<%- include('partials/header.ejs') %>
-    <%- include('partials/navbar.ejs') %>
-        <button data-modal-target="#modal">Open Modal</button>
-        <div class="modal" id="modal">
+<%- include('partials/header.ejs') %> <%- include('partials/navbar.ejs') %>
+<!-- <button data-modal-target="modal">Open Modal</button> -->
+<!-- <div class="modal" id="modal">
             <div class="modal-header">
                 <h2>Modal Header</h2>
                 <button data-close-button class="close-button">&times;</button>
@@ -14,91 +13,115 @@
                 Quibusdam hic quos, natus ipsum libero dolorem iusto nostrum beatae quam optio ad repudiandae porro
                 maxime aliquam dolore sint laborum corporis quidem vero vel!
             </div>
-        </div>
-        <div id="overlay" class="modal-overlay"></div>
-        <section class="home-main-content">
-            <section class="home-section-fullwidth home-section-1">
-                <div class="home-section-fullwidth-content home-section-1-content">
-                    <h2 class="home-section-heading">Join the Arena</h2>
-                    <p class="home-section-text">
-                        The website aims to host a wide range of real-time multiplayer games which can be played by
-                        people all over the world.<br>
-                        These games are various board and other games based on wit and puzzle-solving skills.<br>
-                        The games are designed to be fun and challenging.
-                    </p>
-                    <form action="/gameslist">
-                        <button class="home-section-btn btn">View Games</button>
-                    </form>
-                </div>
-                <img src="/images/gaming_person.png" alt="" class="home-section-fullwidth-img home-section-1-img">
-                <div class="section-fullwidth-backdrop home-section-1-backdrop"></div>
-            </section>
-            <section class="home-section-2">
-                <section class="home-section-2-sub-1">
-                    <div class="home-section-2-sub-1-content">
-                        <h2 class="home-section-heading">Take the time to play</h2>
-                        <ul class="home-section-list">
-                            <li>During your lunch break</li>
-                            <li>Commuting time</li>
-                            <li>At Home </li>
-                        </ul>
-                        <h2 class="home-section-heading">With</h2>
-                        <ul class="home-section-list">
-                            <li>Friends</li>
-                            <li>Family</li>
-                            <li>Colleague</li>
-                        </ul>
-                        <img src="/images/chess_piece.png" alt="" class="home-section-2-img">
-                        <form action="/register">
-                            <button class="home-section-btn btn">Register</button>
-                        </form>
-                    </div>
-                </section>
-                <section class="home-section-2-sub-2">
-                    <div class="home-section-2-sub-2-content">
-                        <h2 class="home-section-heading">Join a game</h2>
-                        <p class="home-section-text">
-                            The website is designed to be a platform to allow people to play with their friends and
-                            family sitting anywhere around the globe.
-                            <br>
-                            It offers a wide range of multiplayer online games that can be played by people all over the
-                            world.
-                        </p>
-                        <img src="/images/thinking.png" alt="" id="homeHoveringImg" class="home-section-2-img ">
-                        <form action="/login">
-                            <button class="home-section-btn btn">Login</button>
-                        </form>
-                    </div>
-                </section>
-            </section>
-            <section class="home-section-fullwidth home-section-3">
-
-                <div class="home-section-fullwidth-content home-section-3-content">
-                    <h2 class="home-section-heading">
-                        Great Games
-                    </h2>
-                    <p class="home-section-text">
-                        Light-hearted games are sure to fill anyone’s gloomy regular day with loads of laughter and joy
-                        while also enhancing your strategic and creative thinking.<br>
-                        This platform can a breakthrough for leisure and amusement activities also enhancing problem
-                        solving and creative skills of people.
-                    </p>
-                    <form action="/gameslist">
-                        <button class="home-section-btn btn">View Games</button>
-                    </form>
-                </div>
-                <div class="section-fullwidth-backdrop home-section-3-backdrop"></div>
-                <div>
-                    <div>
-                        <img src="/images/img1.png" alt="" class="home-section-fullwidth-img home-section-3-img">
-                        <img src="/images/img4.png" alt="" class="home-section-fullwidth-img home-section-3-img">
-                    </div>
-                    <div>
-                        <img src="/images/img2.png" alt="" class="home-section-fullwidth-img home-section-3-img">
-                        <img src="/images/img3.png" alt="" class="home-section-fullwidth-img home-section-3-img">
-                    </div>
-                </div>
-            </section>
-        </section>
-        <script src="/javascript/home.js"></script>
-        <%- include('partials/footer.ejs') %>
+        </div> -->
+<div id="overlay" class="modal-overlay"></div>
+<section class="home-main-content">
+  <section class="home-section-fullwidth home-section-1">
+    <div class="home-section-fullwidth-content home-section-1-content">
+      <h2 class="home-section-heading">Join the Arena</h2>
+      <p class="home-section-text">
+        The website aims to host a wide range of real-time multiplayer games
+        which can be played by people all over the world.<br />
+        These games are various board and other games based on wit and
+        puzzle-solving skills.<br />
+        The games are designed to be fun and challenging.
+      </p>
+      <form action="/gameslist">
+        <button class="home-section-btn btn">View Games</button>
+      </form>
+    </div>
+    <img
+      src="/images/gaming_person.png"
+      alt=""
+      class="home-section-fullwidth-img home-section-1-img"
+    />
+    <div class="section-fullwidth-backdrop home-section-1-backdrop"></div>
+  </section>
+  <section class="home-section-2">
+    <section class="home-section-2-sub-1">
+      <div class="home-section-2-sub-1-content">
+        <h2 class="home-section-heading">Take the time to play</h2>
+        <ul class="home-section-list">
+          <li>During your lunch break</li>
+          <li>Commuting time</li>
+          <li>At Home</li>
+        </ul>
+        <h2 class="home-section-heading">With</h2>
+        <ul class="home-section-list">
+          <li>Friends</li>
+          <li>Family</li>
+          <li>Colleague</li>
+        </ul>
+        <img src="/images/chess_piece.png" alt="" class="home-section-2-img" />
+        <form action="/register">
+          <button class="home-section-btn btn">Register</button>
+        </form>
+      </div>
+    </section>
+    <section class="home-section-2-sub-2">
+      <div class="home-section-2-sub-2-content">
+        <h2 class="home-section-heading">Join a game</h2>
+        <p class="home-section-text">
+          The website is designed to be a platform to allow people to play with
+          their friends and family sitting anywhere around the globe.
+          <br />
+          It offers a wide range of multiplayer online games that can be played
+          by people all over the world.
+        </p>
+        <img
+          src="/images/thinking.png"
+          alt=""
+          id="homeHoveringImg"
+          class="home-section-2-img"
+        />
+        <form action="/login">
+          <button class="home-section-btn btn">Login</button>
+        </form>
+      </div>
+    </section>
+  </section>
+  <section class="home-section-fullwidth home-section-3">
+    <div class="home-section-fullwidth-content home-section-3-content">
+      <h2 class="home-section-heading">Great Games</h2>
+      <p class="home-section-text">
+        Light-hearted games are sure to fill anyone’s gloomy regular day with
+        loads of laughter and joy while also enhancing your strategic and
+        creative thinking.<br />
+        This platform can a breakthrough for leisure and amusement activities
+        also enhancing problem solving and creative skills of people.
+      </p>
+      <form action="/gameslist">
+        <button class="home-section-btn btn">View Games</button>
+      </form>
+    </div>
+    <div class="section-fullwidth-backdrop home-section-3-backdrop"></div>
+    <div>
+      <div>
+        <img
+          src="/images/img1.png"
+          alt=""
+          class="home-section-fullwidth-img home-section-3-img"
+        />
+        <img
+          src="/images/img4.png"
+          alt=""
+          class="home-section-fullwidth-img home-section-3-img"
+        />
+      </div>
+      <div>
+        <img
+          src="/images/img2.png"
+          alt=""
+          class="home-section-fullwidth-img home-section-3-img"
+        />
+        <img
+          src="/images/img3.png"
+          alt=""
+          class="home-section-fullwidth-img home-section-3-img"
+        />
+      </div>
+    </div>
+  </section>
+</section>
+<script src="/javascript/modal.js"></script>
+<%- include('partials/footer.ejs') %>

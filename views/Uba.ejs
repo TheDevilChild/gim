@@ -3,19 +3,97 @@
         <script>
             const roomId = JSON.parse('<%-JSON.stringify(roomId)%>');
             const isCreator = JSON.parse('<%-JSON.stringify(isCreator)%>');
+            function enforceMinMax(el) {
+                console.log("hi");
+                if (el.value != "") {
+                    if (parseInt(el.value) < parseInt(el.min)) {
+                        el.value = el.min;
+                    }
+                    if (parseInt(el.value) > parseInt(el.max)) {
+                        el.value = el.max;
+                    }
+                }
+            }
         </script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <div id="modal-overlay" class="modal-overlay"></div>
         <section class="Uba">
             <section class="left-sidebar">
                 <%- include('partials/startInfoLeftSidebar.ejs') %>
+                    <ul class="history">
+                        <% for(let i=1; i <=3 ; i++) { %>
+                            <li class="history-modal-card">
+                                <div class="heading" id="history-card-heading-<%=i%>">Round <%= i %> results : </div>
+                                <div class="modal" id="uba-round-<%=i%>-results">
+                                    <div class="modal-header">
+                                        <h2>Round <%=i%> Results</h2>
+                                        <button data-close-button class="close-button">&times;</button>
+                                    </div>
+                                    <div class="switch-tab">
+                                        <div class="switch-slab switch-slab-active" id="score-slab-<%=i%>">Score of
+                                            Round</div>
+                                        <div class="switch-slab" id="bid-freq-slab-<%=i%>">Frequency of Bids</div>
+                                    </div>
+                                    <div id="result-content">
+                                        <div id="frequency-chart">
+                                            <canvas class="result-chart" id="round-<%=i%>-score-ctx"></canvas>
+                                            <canvas class="result-chart hidden-opacity"
+                                                id="round-<%=i%>-bid-freq-ctx"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="game-btn" id="uba-round-<%=i%>-results-btn"
+                                    data-modal-target="uba-round-<%=i%>-results" disabled>View</button>
+                                </div>
+                            </li>
+                            <% } %>
+                                <li class="history-modal-card hidden" id="final-score-card-container">
+                                    <div class="heading">Final Score :</div>
+                                    <div class="modal" id="uba-final-results">
+                                        <div class="modal-header">
+                                            <h2>Score Board</h2>
+                                            <button data-close-button class="close-button">&times;</button>
+                                        </div>
+                                        <div id="score-table-container" class="score-table-container">
+                                            <table id="final-score-table" class="final-score-table">
+                                                <tr>
+                                                    <th>Rank</th>
+                                                    <th>Player</th>
+                                                    <th>Score</th>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <button class="game-btn" id="uba-final-results-btn"
+                                        data-modal-target="uba-final-results" disabled>View</button>
+                                    </div>
+                                </li>
+                    </ul>
             </section>
             <section class="main-content">
                 <div class="game-overlay" id="overlay"></div>
+                <div class="bids-container">
+                    <% for(let i=1; i <=3; i++) { %>
+                        <div id="bid-container-<%=i%>" class="bid-card">
+                            <img src="/images/bidding-card.png" id="bid-img-<%=i%>" alt="Bid Image" class="bid-img">
+                            <input type="number" name="bid-<%=i%>" min="1" max="30" id="bid-input-<%=i%>"
+                                class="bid-input" onkeyup=enforceMinMax(this)>
+                            <button class="bid-button game-btn game-btn-active" id="bid-btn-<%=i%>">BID</button>
+                        </div>
+                        <% } %>
+                </div>
+                <!-- <input type="number" name="bid-2" id="bid-input-2" class="bid-input">
+                <button class="bid-button" id="bid-btn-2">BID</button>
+                <input type="number" name="bid-3" id="bid-input-3" class="bid-input">
+                <button class="bid-button" id="bid-btn-3">BID</button> -->
+                <button id="submit-btn" class="game-btn" disabled>Submit</button>
             </section>
             <section class="right-sidebar">
                 <%- include('partials/playersListRightSidebar.ejs') %>
-                <%- include('partials/chatRightSidebar.ejs') %>
+                    <%- include('partials/chatRightSidebar.ejs') %>
             </section>
         </section>
+        <script src="/javascript/modal.js"></script>
         <script src="/javascript/game.js"></script>
         <script src="/javascript/Uba.js"></script>
         <%- include('partials/footer.ejs') %>

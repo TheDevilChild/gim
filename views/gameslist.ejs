@@ -1,17 +1,153 @@
-<%- include('partials/header.ejs') %>
-    <%- include('partials/navbar.ejs') %>
-        <section class="gameslist-showSection">
-            <div class="gameslist-showSection-content">
-                <h2 class="gameslist-showSection-heading">What are you waiting for?</h2>
-                <p class="gameslist-showSection-text">
-                    Start playing now for never ending fun!<br>
-                    Experience the fun of offline games sitting at your home with your friends all around the world
-                </p>
-            </div>
-            <div class="swiper mySwiper gameslist-swiper">
+<%- include('partials/header.ejs') %> <%- include('partials/navbar.ejs') %>
+<div id="modal-overlay" class="modal-overlay"></div>
+<!-- <div id="modal-container"> -->
+  <div class="modal game-modal" id="row-modal">
+    <img src="images/game-bannar-2.jpg" alt="" class="game-img" id="uba-img" />
+    <div class="modal-content" id="uba-content">
+      <div class="game-title" id="uba-title">
+        <h1>Five in a Row</h1>
+        <div class="game-btn-container" id="uba-btn-container">
+          <form action="/play/FiveInARow/create">
+            <button class="btn">Create Game</button>
+        </form>
+        <form action="/play/FiveInARow/join">
+          <button class="btn">Join Game</button>
+      </form>
+        </div>
+      </div>
+      <div class="game-info-container" id="uba-info-container">
+        <div class="players-num" id="uba-players-num">
+          <img src="images/3699734.png" alt="" class="icon" id="player-icon" />
+          <span>2</span>
+        </div>
+        <div class="game-dur" id="uba-dur">
+          <img src="images/109613.png" alt="" class="icon" id="clock-icon" />
+          5-10 min
+        </div>
+        <div class="difficulty" id="uba-difficulty">Difficulty: 4/5</div>
+      </div>
+      
+      <div class="game-description" id="uba-description">
+        This is a game of strategy where you have to make 5 blocks of your own color in a row when you are the attacker while on the other hand prevent the other person from making it when its your time to defent.
+      </div>
+      <div class="game-rules" id="uba-rules">
+        <h3 id="rules-title">Rules</h3>
+        <ul>
+          <li>
+            The game consists of 2 rounds. Players switch roles after the first
+            round.
+          </li>
+          <li>
+            In each round, one player is Attacker and the other is Defender.
+          </li>
+          <li>
+            The objective of the Attacker is to get five counters of the same
+            symbol in an orthogonal or diagonal row. Defender aims to prevent
+            this from happening.
+          </li>
+          <li>
+            A round ends if 5 symbols in a row are achieved or the grid is fully
+            filled.
+          </li>
+          <li>
+            The attacker who manages to create a 5 in a row in fewer turns wins.
+            In case both the players are unable to achieve this, the player with
+            the more 4 in a rows wins.
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="modal game-modal" id="uba-modal">
+    <img src="images/game_banner.jpeg" alt="" class="game-img" id="uba-img" />
+    <div class="modal-content" id="uba-content">
+      <div class="game-title" id="uba-title">
+        <h1>The Bidding Game</h1>
+        <div class="game-btn-container" id="uba-btn-container">
+          <form action="/play/Uba/create">
+            <button class="btn">Create Game</button>
+        </form>
+        <form action="/play/Uba/join">
+          <button class="btn">Join Game</button>
+        </form>
+        </div>
+      </div>
+      <div class="game-info-container" id="uba-info-container">
+        <div class="players-num" id="uba-players-num">
+          <img src="images/3699734.png" alt="" class="icon" id="player-icon" />
+          <span>3-10</span>
+        </div>
+        <div class="game-dur" id="uba-dur">
+          <img src="images/109613.png" alt="" class="icon" id="clock-icon" />
+          5-20 min
+        </div>
+        <div class="difficulty" id="uba-difficulty">Difficulty: 3/5</div>
+      </div>
+      <div class="game-description" id="uba-description">
+        This is a bidding game where the only objective is to score the lowest and the highest bids. Seems easy? Well, it's not. Only bids that are unique are considered valid.
+      </div>
+      <div class="game-rules" id="uba-rules">
+        <h3 id="rules-title">Rules</h3>
+        <ul>
+          <li>The auction consists of 3 rounds.</li>
+          <li>
+            In each round, you have to bid 3 integers between 1 and 30, both
+            inclusive.
+          </li>
+          <li>
+            The player with the highest unique bid will score 50000 points.
+          </li>
+          <li>
+            The player with the lowest unique bid will score 25000 points.
+          </li>
+          <li>
+            The player with highest and/ or lowest unique bid will have to pay a
+            fee equal to 1000*x points, where x is the average of the 3 bids
+            placed by the player.
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+<!-- </div> -->
+<section class="gameslist-showSection">
+  <div class="gameslist-showSection-content">
+    <h2 class="gameslist-showSection-heading">What are you waiting for?</h2>
+    <p class="gameslist-showSection-text">
+      Start playing now for never ending fun!<br />
+      Experience the fun of offline games sitting at your home with your friends
+      all around the world
+    </p>
+  </div>
+  <div class="game-cards">
+    <div class="game-card">
+      <div class="game-card-img">
+        <img src="/images/bidding-card.png" alt="" />
+      </div>
+        <div class="game-card-content">
+          <h3 class="game-card-heading">Five In A Row</h3>
+          <p class="game-card-text">A game where attack is as important as defence.</p>
+        </div>
+        <button class="btn game-btn" id="row-modal-btn"
+        data-modal-target="row-modal">View</button>
+    </div>
+    <div class="game-card">
+      <div class="game-card-img">
+        <img src="/images/bidding-card.png" alt="" />
+      </div>
+        <div class="game-card-content">
+          <h3 class="game-card-heading">Unique Bid</h3>
+          <p class="game-card-text">Participate in the most thrilling auction where only the unique bids count!</p>
+        </div>
+        <button class="btn game-btn" id="uba-modal-btn"
+        data-modal-target="uba-modal">View</button>
+    </div>
+      
+  </div>
+  </div>
+  <!-- <div class="swiper mySwiper gameslist-swiper">
                 <div class="swiper-wrapper">
                   <div class="swiper-slide swiper-slide-1">
-                    <!-- <img src="https://swiperjs.com/demos/images/nature-1.jpg" /> -->
                     <h3 class="game-card-heading">
                         5 In A Row
                     </h3>
@@ -31,40 +167,13 @@
                     </button>
                   </div>
                   <div class="swiper-slide">
-                    <!-- <img src="https://swiperjs.com/demos/images/nature-1.jpg" /> -->
                     hiiii
                   </div>
                   <div class="swiper-slide">
-                    <!-- <img src="https://swiperjs.com/demos/images/nature-1.jpg" /> -->
                   </div>
-                  <!-- <div class="swiper-slide">
-                    <img src="https://swiperjs.com/demos/images/nature-2.jpg" />
-                  </div>
-                  <div class="swiper-slide">
-                    <img src="https://swiperjs.com/demos/images/nature-3.jpg" />
-                  </div>
-                  <div class="swiper-slide">
-                    <img src="https://swiperjs.com/demos/images/nature-4.jpg" />
-                  </div>
-                  <div class="swiper-slide">
-                    <img src="https://swiperjs.com/demos/images/nature-5.jpg" />
-                  </div>
-                  <div class="swiper-slide">
-                    <img src="https://swiperjs.com/demos/images/nature-6.jpg" />
-                  </div>
-                  <div class="swiper-slide">
-                    <img src="https://swiperjs.com/demos/images/nature-7.jpg" />
-                  </div>
-                  <div class="swiper-slide">
-                    <img src="https://swiperjs.com/demos/images/nature-8.jpg" />
-                  </div>
-                  <div class="swiper-slide">
-                    <img src="https://swiperjs.com/demos/images/nature-9.jpg" />
-                  </div>
-                </div> -->
                 <div class="swiper-pagination"></div>
               </div>
-        </section>
-
-          
-        <%- include('partials/footer.ejs')%>
+            </div> -->
+</section>
+<script src="/javascript/modal.js"></script>
+<%- include('partials/footer.ejs')%>

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const catchErrors = require('../../lib/async-error');
 const { isLoggedIn } = require('../../lib/auth');
-const { getAllUsers, getFriends, getPendingRequests, acceptFriendRequest, declineFriendRequest, sendFriendRequest } = require('../../controllers/api/userController');
+const { getAllUsers, getFriends, getPendingRequests, acceptFriendRequest, declineFriendRequest, sendFriendRequest, searchUsersQuery } = require('../../controllers/api/userController');
 
 router.route('/all')
     .get(isLoggedIn, getAllUsers);
@@ -21,5 +21,8 @@ router.route('/:id/friendRequest/:requestId')
 
 router.route('/:id/friendRequest/:friendId/send')
     .post(isLoggedIn, catchErrors(sendFriendRequest));
+
+router.route('/search')
+    .get(isLoggedIn, catchErrors(searchUsersQuery))
 
 module.exports = router;

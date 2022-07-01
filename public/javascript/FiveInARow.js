@@ -114,7 +114,9 @@ const getClickCoordinates = (element, event) => {
     }
 
     socket.on('updateGameHistory', (lastMove) => {
-        onSocketUpdateGameHistory(gameHistory,lastMove, createGameHistoryCard);
+        onSocketUpdateGameHistory(gameHistory, lastMove, createGameHistoryCard);
+        const noHistoryOverlay = document.getElementById('noHistoryOverlay');
+        noHistoryOverlay.classList.add('hidden');
         turnCount.innerHTML = lastMove.moveNo;
     })
 
@@ -141,15 +143,13 @@ const getClickCoordinates = (element, event) => {
 
     socket.on('gameOver', ({ game }) => {
         // Do the necessary things to end the game
-        console.log(game);
-        console.log(currentUser);
         if (game.winner === null) {
             gameOverOverlay.classList.add('draw-overlay');
             gameOverMessage.innerHTML = 'Game ended in a draw!';
         }
         else if (game.winner._id === currentUser._id) {
             gameOverOverlay.classList.add('winner-overlay');
-            gameOverMessage.innerHTML = 'You won the game!';
+            gameOverMessage.innerHTML = 'You won the game!🥳';
         } else if(game.loser._id === currentUser._id) {
             gameOverOverlay.classList.add('loser-overlay');
             gameOverMessage.innerHTML = 'You lost the game!';
@@ -163,8 +163,6 @@ const getClickCoordinates = (element, event) => {
         socket.emit('turn', { x: cellX, y: cellY, gameId: 'FiveInARow', roomId, playerId: currentUser._id }, function (err) {
             if (err) {
                 console.log(err);
-            } else {
-                console.log('no error');
             }
         });
     }

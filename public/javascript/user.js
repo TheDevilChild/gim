@@ -50,7 +50,7 @@
                 <button class="friend-btn decline-friend-request" data-id="${requestId}">Decline</button>
                 </div>`;
             } else {
-                return `<div class="friend-btn-div hello">
+                return `<div class="friend-btn-div">
                             <button class="friend-btn decline-friend-request" data-id="${requestId}">Decline</button>
                         </div>`;
             }
@@ -93,38 +93,29 @@
 
     userContainer.addEventListener('click', async (e) => {
         if (e.target.closest('.accept-friend-request')) {
-            console.log('accept');
             const ele = e.target.closest('.accept-friend-request');
             const requestId = ele.dataset.id;
             const id = await acceptFriendRequest(requestId);
-            ele.classList.remove('accept-friend-request');
-            ele.classList.add('message-friend');
-            ele.innerText = 'Message';
-            console.log(id);
+            ele.parentElement.innerHTML = `<button class="friend-btn message-friend" data-id="${id.data.id}">Message</button>`;
             ele.dataset.id = id.data.id;       
-            console.log(ele.dataset.id);
         } else if (e.target.closest('.decline-friend-request')) {
-            console.log('decline');
             const ele = e.target.closest('.decline-friend-request');
             const requestId = ele.dataset.id;
             const id = await declineFriendRequest(requestId);
+            ele.parentElement.innerHTML = `<button class="friend-btn send-friend-request" data-id="${id.data.id}">Add Friend</button>`;
             ele.classList.remove('decline-friend-request');
             ele.classList.add('send-friend-request');
             ele.innerText = 'Add Friend';
-            console.log(id);
             ele.dataset.id = id.data.id;
-            console.log(ele.dataset.id);
         } else if (e.target.closest('.send-friend-request')) {
-            console.log('send'); 
             const ele = e.target.closest('.send-friend-request');
             const userId = ele.dataset.id;
+            console.log(userId);
             const id = await sendFriendRequest(userId);
             ele.classList.remove('send-friend-request');
             ele.classList.add('decline-friend-request');
             ele.innerText = 'Decline';
-            console.log(id);
             ele.dataset.id = id.data.id;
-            console.log(ele.dataset.id);
         } else if (e.target.closest('.message-friend')) {
             // Dont message abhi theek hai -_-
             const userId = e.target.closest('.message-friend').dataset.id;

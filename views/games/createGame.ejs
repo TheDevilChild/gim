@@ -1,17 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+  <link rel="stylesheet" href="/css/main.css" />
 </head>
+
 <body>
-    <form action="/play/<%= gameId %>/create" method="POST">
-        <input type="password" name="password" id="password" placeholder="Password" value="a">
-        <button>
-            Create Game
-        </button>
-    </form>
+  <%- include('../partials/movingBg.ejs') %>
+    <section class="form-page">
+      <section class="form-background card">
+        <div class="form-heading">
+          <h2>
+            <% if(gameId=='FiveInARow' ) { %> Five In A Row <% } else if(gameId=='Uba' ) { %> Uba <% } %>
+          </h2>
+          <h3>Create Game</h3>
+        </div>
+        <form action="/play/<%= gameId %>/create" method="POST" class="form-fields">
+          <div class="form-field">
+            <label for="password">Set Password</label>
+            <input type="password" name="password" id="password" placeholder="Password" value="a" />
+          </div>
+          <% if(gameId=='Uba' ) { %>
+            <div class="form-field-half-container">
+              <div class="form-field form-field-half">
+                <label for="noOfPlayers">No of Players</label>
+                <select name="noOfPlayers" id="noOfPlayers" class="form-field-drop-down">
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                </select>
+              </div>
+              <div class="form-field form-field-half">
+                <label for="noOfRounds">No of Rounds</label>
+                <select name="noOfRounds" id="noOfRounds" class="form-field-drop-down">
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+              </div>
+            </div>
+            <% } %>
+              <div class="form-field-note">
+                <span class="form-field-note-astrik">*</span>You are the host of the game. You can invite your friends
+                to join the game by sending them the password you
+                set as well as the auto generated room code that will be provided to you once you enter the game.
+              </div>
+              <div class="form-field-input">
+                <input type="submit" name="submit" id="submit" value="Create Game" class="btn btn-submit" />
+              </div>
+              <!-- <button>Create Game</button> -->
+        </form>
+      </section>
+    </section>
+    <script src="/javascript/hoveringForm.js"></script>
 </body>
+
 </html>

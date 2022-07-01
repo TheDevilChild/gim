@@ -1,18 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="/css/main.css" />
 </head>
+
 <body>
-    <form action="" method="POST">
-        <input type="text" name="roomId" placeholder="Room Id">
-        <input type="password" name="password" id="password" placeholder="Password" value="a">
-        <button>
-            Join Game
-        </button>
-    </form>
+    <%- include('../partials/movingBg.ejs') %>
+        <section class="form-page">
+            <section class="form-background card">
+                <div class="form-heading">
+                    <h2>
+                        <% if(gameId=='FiveInARow' ) { %> Five In A Row <% } else if(gameId=='Uba' ) { %> Uba <% } %>
+                    </h2>
+                    <h3>Join Game</h3>
+                </div>
+                <form action="/play/<%= gameId %>/join" method="POST" class="form-fields">
+                    <div class="form-field">
+                        <label for="" roomId"> Room Code </label>
+                        <input type="text" name="roomId" placeholder="Room Id">
+                    </div>
+                    <div class="form-field">
+                        <label for="password">Enter Password</label>
+                        <input type="password" name="password" id="password" placeholder="Password" value="a">
+                    </div>
+                    <div class="form-field-note">
+                        <span class="form-field-note-astrik">*</span>Don't have a Room Id and Password? <a href="/play/<%= gameId %>/create" class="form-field-create-link">Create a Game</a>
+                      </div>
+                    <div class="form-field-input">
+                        <input type="submit" name="submit" id="submit" value="Join Game" class="btn btn-submit" />
+                      </div>
+                </form>
+            </section>
+        </section>
+        <script src="/javascript/hoveringForm.js"></script>
+
 </body>
+
 </html>

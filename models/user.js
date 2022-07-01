@@ -17,12 +17,20 @@ const UserSchema = new mongoose.Schema({
     },
     profilePicture: {
         type: String,
-        default: '/images/img1.png'
+        default: '/images/profile-photo.jpg'
     },
-    games: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Game'
-    }],
+    games: {
+        type: {
+            fiveInARow: [{
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'FiveInARow'
+            }],
+            Uba: [{
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Uba'
+            }]
+        }
+    },
     friends: {
         type: [mongoose.Schema.Types.ObjectId],
         ref: 'Friend'
@@ -31,13 +39,9 @@ const UserSchema = new mongoose.Schema({
         type: [mongoose.Schema.Types.ObjectId],
         ref: 'FriendRequest'
     }
-    // reviews: [{
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'Review'
-    // }],
 });
 
-UserSchema.plugin(passportLocalMongoose);
+UserSchema.plugin(passportLocalMongoose, {usernameQueryFields: ['email']});
 const User = mongoose.model('User', UserSchema);
 
 module.exports = User;

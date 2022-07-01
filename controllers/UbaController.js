@@ -1,5 +1,6 @@
 const { BidArrayElement, BidArray, Uba, ScoreOfRound, AvgScoreOfRound } = require('../models/Uba');
 const { v4: uuidv4 } = require('uuid');
+const { ConnectionStates } = require('mongoose');
 
 const createGame = async (req, res) => {
     const { password, noOfPlayers, noOfRounds } = req.body;
@@ -15,20 +16,20 @@ const createGame = async (req, res) => {
         noOfPlayers: noOfPlayers,
         noOfRounds: noOfRounds
     });
-    for (let i = 0; i < noOfPlayers; i++) {
-        Uba.finalScore.push(0);
-        Uba.playersToBid.push(true);
+    for (let i = 0; i < game.noOfPlayers; i++) {
+        game.finalScore.push(0);
+        game.playersToBid.push(true);
+        game.playersReady.push(false);
     }
-    for (let i = 0; i < noOfRounds; i++) {
+    for (let i = 0; i < game.noOfRounds; i++) {
         const scoreOfRound = new ScoreOfRound({
             round: i
         });
         const avgScoreOfRound = new AvgScoreOfRound({
             round: i
         });
-
-        for (let j = 0; j < noOfPlayers; j++) {
-            scoreOfRound.avgScore.push(0);
+        for (let j = 0; j < game.noOfPlayers; j++) {
+            scoreOfRound.score.push(0);
             avgScoreOfRound.avgScore.push(0);
         }
         await scoreOfRound.save();
@@ -36,27 +37,25 @@ const createGame = async (req, res) => {
         game.scores.push(scoreOfRound._id);
         game.avgScores.push(avgScoreOfRound._id);
     }
-    for (let i = 0; i < noOfRounds; i++) {
+    for (let i = 0; i < game.noOfRounds; i++) {
         const bidArray = new BidArray();
-        for (let j = 0; j < 31; j++) {
+        for (let j = 1; j < 31; j++) {
             const bidArrayElement = new BidArrayElement({
                 bidValue: j,
                 bidUsers: []
             });
             await bidArrayElement.save();
-            BidArray.bidArray.push(bidArrayElement._id);
+            bidArray.bidArray.push(bidArrayElement._id);
         }
         await bidArray.save();
         game.bids.push(bidArray._id);
     }
-    console.log('hi');
     await game.save();
     res.render('Uba', { title: 'Uba', showNavbar: true, showFooter: true, roomId, isCreator: true });
 
 };
 
 const joinGame = async (req, res) => {
-    console.log('hello');
     const { roomId, password } = req.body;
     const game = await Uba.findOne({ roomId: roomId, password: password });
     if (roomId.trim() === '' || password.trim() === '') {
@@ -110,18 +109,9 @@ const getNoOfPlayers = async (roomId) => {
 }
 
 const setReady = async (roomId, playerId) => {
-    // try {
-    //     const game = await Uba.findOne({ roomId: roomId });
-    //     game.playersReady[game.players.indexOf(playerId)] = true;
-    //     await game.save();
-    // } catch (e) {
-    //     console.log(e);
-    // }
-
     const game = await Uba.findOne({ roomId: roomId });
-    console.log(game.playersReady);
     for (let i = 0; i < game.players.length; i++) {
-        if (game.players[i]._id.equals(playerId)) {
+        if (game.players[i].equals(playerId)) {
             if (!game.playersReady[i]) {
                 game.playersReady[i] = true;
                 await game.save();
@@ -129,7 +119,6 @@ const setReady = async (roomId, playerId) => {
             break;
         }
     }
-    console.log(game.playersReady);
 }
 
 const clearReady = async (roomId, playerId) => {
@@ -139,7 +128,6 @@ const clearReady = async (roomId, playerId) => {
         await game.save();
     }
     catch (e) {
-        console.log(2343);
         console.log(e);
     }
 }
@@ -154,16 +142,15 @@ const areAllReady = async (roomId) => {
         }
         return true;
     } catch (e) {
-        console.log(23);
         console.log(e);
     }
 }
 
 const clearReadyAll = async (roomId) => {
-    const game = await Uba.findById(roomId);
-    game.playersReady.forEach(element => {
-        element = false;
-    });
+    const game = await Uba.findOne({ roomId: roomId });
+    for (let i = 0; i < game.playersReady.length; i++) {
+        game.playersReady[i] = false;
+    }
     await game.save();
 }
 
@@ -184,32 +171,59 @@ const getCurrentRoundNumber = async (roomId) => {
 }
 
 const makeBid = async (roomId, playerId, bidValues) => {
-    const game = await Uba.findOne({ roomId: roomId }).populate('bids');
+    const game = await Uba.findOne({ roomId: roomId });
     const bidArray = await BidArray.findById(game.bids[game.currentRound]);
     const avgScoreOfRound = await AvgScoreOfRound.findById(game.avgScores[game.currentRound]);
     let roundOver = false, gameOver = false;
+    let roundEndInfo = null;
     const playerIndex = game.players.indexOf(playerId);
-    for (let i = 0; i < bidValues.length; i++) {
-        const bidArrayElement = await BidArrayElement.findById(bidArray.bidArray[bidValues[i]]);
-        bidArrayElement.bidUsers.push(playerId);
-        avgScoreOfRound[playerIndex] += bidValues[i];
-        await bidArrayElement.save();
+    try {
+        for (let i = 0; i < bidValues.length; i++) {
+            const bidArrayElement = await BidArrayElement.findById(bidArray.bidArray[bidValues[i] - 1]);
+            bidArrayElement.bidUsers.push(playerId);
+            avgScoreOfRound.avgScore[playerIndex] += parseInt(bidValues[i]);
+            await bidArrayElement.save();
+        }
+    } catch (e) {
+        console.log(e);
     }
-    avgScoreOfRound[playerIndex] = (avgScoreOfRound[playerIndex] / bidValues.length);
-    await avgScoreOfRound.save();
-    game.playersToBid[playerIndex] = false;
-    if (game.playersToBid.every(element => element === false)) {
-        roundOver = true;
-        game.currentRound++;
-        game.playersToBid.forEach(element => element = true);
-        clearReadyAll(roomId);
+    try {
+        avgScoreOfRound.avgScore[playerIndex] = (avgScoreOfRound.avgScore[playerIndex] / bidValues.length);
+        await avgScoreOfRound.save();
+    } catch (e) {
+        console.log(e);
     }
+    try {
+        game.playersToBid[playerIndex] = false;
+        if (game.playersToBid.every(element => element === false)) {
+            for (let i = 0; i < game.playersToBid.length; i++) {
+                game.playersToBid[i] = true;
+            }
+            roundOver = true;
+            game.currentRound++;
+            game.playersToBid.forEach(element => element = true);
+            await game.save();
+            roundEndInfo = await calculateRoundResult(roomId);
+            await clearReadyAll(roomId);
+        } else {
+            await game.save();
+        }
+        gameOver = await isGameOver(roomId);
+    }
+    catch (e) {
+        console.log(e);
+    }
+    return { roundOver, gameOver, roundEndInfo };
+}
+
+const isGameOver = async(roomId) => {
+    const game = await Uba.findOne({ roomId: roomId });
     if (game.currentRound === game.noOfRounds) {
         game.status = 'finished';
-        gameOver = true;
-    }
-    await game.save();
-    return { roundOver, gameOver };
+        await game.save();
+        return  true;
+    }   
+    return false;
 }
 
 const calculateRoundResult = async (roomId) => {
@@ -219,37 +233,42 @@ const calculateRoundResult = async (roomId) => {
     const avgScoreOfRound = await AvgScoreOfRound.findById(game.avgScores[game.currentRound - 1]);
 
     const utility = bidArray.bidArray.filter(element => element.bidUsers.length > 0);
-
     utility.sort((a, b) => b.bidValue - a.bidValue);
-
-    const lowestBid = utility.reduce((acc, curr) => {
-        return acc.persons.length > curr.persons.length ? curr : acc;
-    });
     const highestBid = utility.reduce((acc, curr) => {
-        return acc.persons.length >= curr.persons.length ? curr : acc;
+        return acc.bidUsers.length > curr.bidUsers.length ? curr : acc;
+    });
+    const lowestBid = utility.reduce((acc, curr) => {
+        return acc.bidUsers.length >= curr.bidUsers.length ? curr : acc;
     });
 
     for (let i = 0; i < lowestBid.bidUsers.length; i++) {
         const playerIndex = game.players.indexOf(lowestBid.bidUsers[i]);
-        scoreOfRound.avgScore[playerIndex] += 25_000;
+        scoreOfRound.score[playerIndex] += 25_000;
     }
     for (let i = 0; i < highestBid.bidUsers.length; i++) {
         const playerIndex = game.players.indexOf(highestBid.bidUsers[i]);
-        scoreOfRound.avgScore[playerIndex] += 50_000;
+        scoreOfRound.score[playerIndex] += 50_000;
     }
-    for (let i = 0; i < scoreOfRound.length; i++) {
-        if (scoreOfRound[i] > 0) {
-            scoreOfRound[i] -= avgScoreOfRound[i] * 1_000;
+    for (let i = 0; i < scoreOfRound.score.length; i++) {
+        if (scoreOfRound.score[i] > 0) {
+            scoreOfRound.score[i] -= avgScoreOfRound.avgScore[i] * 1_000;
         }
-        game.finalScore[i] += scoreOfRound[i];
+        game.finalScore[i] += scoreOfRound.score[i];
     }
     await scoreOfRound.save();
     await game.save();
+    const playersPlaying = await getPlayersList(roomId);
+    return { frequency: utility, lowestBid, highestBid, scoreOfRound, players : playersPlaying, round: game.currentRound}; 
 }
 
 const getFinishedGame = async (roomId) => {
-    const game = await Uba.findById(roomId);
-    return game;
+    const game = await Uba.findOne({ roomId: roomId }).populate('players');
+    const arr = [];
+    for (let i = 0; i < game.finalScore.length; i++) {
+        arr.push({ player: game.players[i].username, score: game.finalScore[i] });
+    }
+    arr.sort((a, b) => b.score - a.score);
+    return arr;
 }
 
 const getNoOfRounds = async (roomId) => {
@@ -269,7 +288,6 @@ module.exports = {
     setReady,
     clearReady,
     areAllReady,
-    clearReadyAll,
     makeBid,
     calculateRoundResult,
     getFinishedGame,

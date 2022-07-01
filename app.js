@@ -54,7 +54,7 @@ app.use((req, res, next) => {
     res.locals.error = req.flash('error');
     next();
 })
-
+    
 
 //Routes
 
@@ -151,7 +151,6 @@ io.on('connection', (socket) => {
                 io.to(roomId).emit('enablePlayButton');
             }
         } catch (e) {
-            console.log("werew");
             console.log(e);
         }
     })
@@ -177,7 +176,6 @@ io.on('connection', (socket) => {
                     io.to(roomId).emit('updateGameHistory', await FiveInARow.getLastMove(roomId));
                     io.to(roomId).emit('currentPlayer',await eval(gameId).getCurrentPlayer(roomId));
                     if (gameOver) {
-                        console.log('game over');
                         io.to(roomId).emit('gameOver', { game: await FiveInARow.getFinishedGame(roomId) });
                     } else if (roundOver) {
                         // Have to figure out what all to send back when the rounds get over
@@ -195,23 +193,24 @@ io.on('connection', (socket) => {
         }
     })
     
-    // socket.on('makeBid', async (params, callback) => {
-    //     const { gameId, roomId, playerId, bids } = params;
-    //     if (gameId === 'Uba') {
-    //         const { roundOver, gameOver } = await Uba.makeBid(roomId, playerId, bids);
-    //         if (gameOver) {
-    //             // Have to figure out what all to send back when the game gets over
-    //             io.to(roomId).emit('gameOver', { game: Uba.getFinishedGame(roomId) });
-    //         } else if (roundOver) {
-    //             // Have to figure out what to send back when the rounds get over
-    //             io.to(roomId).emit('endRound');
-    //         } else {
-    //             // Send back to wait for the other player to make a bid
-    //             // Maybe will send back his bids also to be displayed on the sidebar
-    //             socket.emit('makeBid');
-    //         }
-    //     }
-    // });
+    socket.on('makeBid', async (params, callback) => {
+        const { gameId, roomId, playerId, bids } = params;
+        if (gameId === 'Uba') {
+            const { roundOver, gameOver, roundEndInfo } = await Uba.makeBid(roomId, playerId, bids);
+            if (gameOver) {
+                // Have to figure out what all to send back when the game gets over
+                io.to(roomId).emit('endRound', { roundEndInfo, isGameOver: gameOver });
+                io.to(roomId).emit('gameOver', { results: await Uba.getFinishedGame(roomId) });
+            } else if (roundOver) {
+                // Have to figure out what to send back when the rounds get over
+                io.to(roomId).emit('endRound', { roundEndInfo, isGameOver: gameOver });
+            } else {
+                // Send back to wait for the other player to make a bid
+                // Maybe will send back his bids also to be displayed on the sidebar
+                socket.emit('makeBid');
+            }
+        }
+    });
 })
 
 

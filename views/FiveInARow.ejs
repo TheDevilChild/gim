@@ -8,38 +8,17 @@
             <section class="left-sidebar">
                 <%- include('partials/startInfoLeftSidebar.ejs') %>
                 <div class="history">
-                    <span id="turnCount" class="hidden">1</span>
+                    <span id="turnCount" class="turn-count hidden">1</span>
                     <ul class="game-history" id="gameHistory">
-                        <li class="game-history-card">
+                        <!-- <li class="game-history-card">
                             <span class="player">Pratyush</span>
                             <span class="action">attacked</span>
                             on the tile
                             <span class="coordinates">(0,0)</span>
-                        </li>
-                        <li class="game-history-card">
-                            Pratyush attacked on the tile (0,0)
-                        </li>
-                        <li class="game-history-card">
-                            Pratyush attacked on the tile (0,0)
-                        </li>
-                        <li class="game-history-card">
-                            Pratyush attacked on the tile (0,0)
-                        </li>
-                        <li class="game-history-card">
-                            Pratyush attacked on the tile (0,0)
-                        </li>
-                        <li class="game-history-card">
-                            Pratyush attacked on the tile (0,0)
-                        </li>
-                        <li class="game-history-card">
-                            Pratyush attacked on the tile (0,0)
-                        </li>
-                        <li class="game-history-card">
-                            Pratyush attacked on the tile (0,0)
-                        </li>
-                        <li class="game-history-card">
-                            Plsdjfl attacked on the tile (0,0)
-                        </li>
+                        </li> -->
+                        <div class="no-chat-overlay" id="noHistoryOverlay">
+                            Play the game to see  history.
+                        </div>
                     </ul>
                 </div>
             </section>
@@ -57,6 +36,7 @@
                 <%- include('partials/chatRightSidebar.ejs') %>
             </section>
         </section>
+        <script src="/javascript/modal.js"></script>
         <script src="/javascript/game.js"></script>
         <script src="/javascript/FiveInARow.js"></script>
 
